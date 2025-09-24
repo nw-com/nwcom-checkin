@@ -6,8 +6,49 @@ class App {
     }
 
     init() {
+        console.log('🚀 西北勤務管理系統初始化中...');
+        
+        // 創建背景粒子效果
+        this.createParticles();
+        
+        // 載入記住的電子郵件
+        this.loadRememberedEmail();
+        
         this.setupEventListeners();
         this.setupNavigation();
+        
+        console.log('✅ 系統初始化完成！');
+    }
+
+    // 創建背景粒子效果
+    createParticles() {
+        const particlesContainer = document.getElementById('particles');
+        if (!particlesContainer) return;
+        
+        const particleCount = 50;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 15 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+    }
+
+    // 載入記住的電子郵件
+    loadRememberedEmail() {
+        const rememberedEmail = localStorage.getItem('rememberedEmail');
+        if (rememberedEmail) {
+            const emailInput = document.getElementById('email');
+            const rememberMeCheckbox = document.getElementById('remember-me');
+            if (emailInput) {
+                emailInput.value = rememberedEmail;
+            }
+            if (rememberMeCheckbox) {
+                rememberMeCheckbox.checked = true;
+            }
+        }
     }
 
     // 設定事件監聽器
@@ -55,40 +96,70 @@ class App {
     async handleLogin() {
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const loginError = document.getElementById('login-error');
+        const loginButton = document.getElementById('login-button');
+        const loginText = document.getElementById('login-text');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const rememberMe = document.getElementById('remember-me');
 
         try {
-            loginError.textContent = '';
+            // 隱藏之前的訊息
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
             
             if (!email || !password) {
-                loginError.textContent = '請輸入電子郵件和密碼';
+                errorMessage.textContent = '請輸入電子郵件和密碼';
+                errorMessage.classList.add('show');
                 return;
+            }
+
+            // 顯示載入狀態
+            loginButton.classList.add('loading');
+            loginText.textContent = '登入中...';
+
+            // 處理記住我功能
+            if (rememberMe && rememberMe.checked) {
+                localStorage.setItem('rememberedEmail', email);
+            } else {
+                localStorage.removeItem('rememberedEmail');
             }
 
             await window.authManager.login(email, password);
             
+            // 顯示成功訊息
+            successMessage.textContent = '登入成功！正在跳轉...';
+            successMessage.classList.add('show');
+            
         } catch (error) {
             console.error('登入錯誤:', error);
-            let errorMessage = '登入失敗';
+            let errorMessageText = '登入失敗';
             
             switch (error.code) {
                 case 'auth/invalid-email':
-                    errorMessage = '電子郵件格式錯誤';
+                    errorMessageText = '電子郵件格式錯誤';
                     break;
                 case 'auth/user-disabled':
-                    errorMessage = '帳號已被停用';
+                    errorMessageText = '帳號已被停用';
                     break;
                 case 'auth/user-not-found':
-                    errorMessage = '找不到此帳號';
+                    errorMessageText = '找不到此帳號';
                     break;
                 case 'auth/wrong-password':
-                    errorMessage = '密碼錯誤';
+                    errorMessageText = '密碼錯誤';
                     break;
                 default:
-                    errorMessage = '登入失敗，請稍後再試';
+                    errorMessageText = '登入失敗，請稍後再試';
             }
             
-            loginError.textContent = errorMessage;
+            errorMessage.textContent = errorMessageText;
+            errorMessage.classList.add('show');
+            
+        } finally {
+            // 重置按鈕狀態
+            if (loginButton) {
+                loginButton.classList.remove('loading');
+                loginText.textContent = '登入系統';
+            }
         }
     }
 
