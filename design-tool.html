@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 設計工具 - 西北勤務管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .tool-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            height: calc(100vh - 200px);
+        }
+        
+        /* 控制面板 */
+        .control-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow-y: auto;
+        }
+        
+        .panel-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .panel-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            margin-right: 10px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
+        .control-label {
+            display: block;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .control-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .color-input {
+            height: 40px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        
+        .range-input {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        .range-value {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .preset-btn {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            background: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .preset-btn:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        /* 預覽區域 */
+        .preview-area {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: auto;
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .preview-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-export {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* 預覽內容 */
+        .preview-content {
+            min-height: 400px;
+            padding: 20px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .preview-element {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        /* 代碼輸出區域 */
+        .code-output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .code-title {
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .copy-btn {
+            padding: 4px 8px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 1024px) {
+            .tool-layout {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .control-panel {
+                max-height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .preset-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 設計工具</h1>
+            <p>實時預覽和調整您的頁面設計</p>
+        </div>
+        
+        <div class="tool-layout">
+            <!-- 控制面板 -->
+            <div class="control-panel">
+                <!-- 顏色設置 -->
+                <div class="panel-section">
+                    <div class="section-title">🌈 顏色設置</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">主色調</label>
+                        <input type="color" class="control-input color-input" id="primaryColor" value="#667eea">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">輔助色</label>
+                        <input type="color" class="control-input color-input" id="secondaryColor" value="#764ba2">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">背景色</label>
+                        <input type="color" class="control-input color-input" id="backgroundColor" value="#ffffff">
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">文字色</label>
+                        <input type="color" class="control-input color-input" id="textColor" value="#333333">
+                    </div>
+                    
+                    <div class="preset-buttons">
+                        <button class="preset-btn" onclick="applyPreset('blue')">藍色系</button>
+                        <button class="preset-btn" onclick="applyPreset('green')">綠色系</button>
+                        <button class="preset-btn" onclick="applyPreset('purple')">紫色系</button>
+                        <button class="preset-btn" onclick="applyPreset('orange')">橙色係</button>
+                    </div>
+                </div>
+                
+                <!-- 字體設置 -->
+                <div class="panel-section">
+                    <div class="section-title">🔤 字體設置</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">主標題大小</label>
+                        <input type="range" class="range-input" id="titleSize" min="24" max="48" value="32">
+                        <div class="range-value"><span id="titleSizeValue">32</span>px</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">正文大小</label>
+                        <input type="range" class="range-input" id="bodySize" min="12" max="20" value="16">
+                        <div class="range-value"><span id="bodySizeValue">16</span>px</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">字體粗細</label>
+                        <select class="control-input" id="fontWeight">
+                            <option value="300">細體</option>
+                            <option value="400" selected>正常</option>
+                            <option value="500">中等</option>
+                            <option value="600">粗體</option>
+                            <option value="700">特粗</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 佈局設置 -->
+                <div class="panel-section">
+                    <div class="section-title">📐 佈局設置</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">圓角大小</label>
+                        <input type="range" class="range-input" id="borderRadius" min="0" max="30" value="10">
+                        <div class="range-value"><span id="borderRadiusValue">10</span>px</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">內間距</label>
+                        <input type="range" class="range-input" id="padding" min="10" max="50" value="20">
+                        <div class="range-value"><span id="paddingValue">20</span>px</div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">陰影強度</label>
+                        <input type="range" class="range-input" id="shadowIntensity" min="0" max="50" value="10">
+                        <div class="range-value"><span id="shadowIntensityValue">10</span></div>
+                    </div>
+                </div>
+                
+                <!-- 動畫設置 -->
+                <div class="panel-section">
+                    <div class="section-title">✨ 動畫設置</div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">
+                            <input type="checkbox" id="enableAnimations" checked> 啟用動畫
+                        </label>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label class="control-label">動畫速度</label>
+                        <select class="control-input" id="animationSpeed">
+                            <option value="0.2s">快速 (0.2s)</option>
+                            <option value="0.3s" selected>正常 (0.3s)</option>
+                            <option value="0.5s">慢速 (0.5s)</option>
+                            <option value="1s">很慢 (1s)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 預覽區域 -->
+            <div class="preview-area">
+                <div class="preview-header">
+                    <div class="preview-title">🖼️ 實時預覽</div>
+                    <div class="preview-actions">
+                        <button class="action-btn btn-apply" onclick="applyDesign()">應用設計</button>
+                        <button class="action-btn btn-reset" onclick="resetDesign()">重置</button>
+                        <button class="action-btn btn-export" onclick="exportCSS()">導出CSS</button>
+                    </div>
+                </div>
+                
+                <div class="preview-content" id="previewContent">
+                    <div class="preview-element" id="previewElement">
+                        <h2 id="previewTitle">示例標題</h2>
+                        <p id="previewText">這是一段示例文字，用於展示您的設計效果。您可以調整顏色、字體大小、間距等屬性來創建獨特的設計風格。</p>
+                        <button class="btn" id="previewButton">示例按鈕</button>
+                    </div>
+                    
+                    <div class="preview-element" id="previewCard">
+                        <h3>卡片標題</h3>
+                        <p>這是一個卡片組件的示例，展示了圓角、陰影和內間距的效果。</p>
+                    </div>
+                </div>
+                
+                <div class="code-output" id="codeOutput" style="display: none;">
+                    <div class="code-header">
+                        <div class="code-title">生成的CSS代碼</div>
+                        <button class="copy-btn" onclick="copyCode()">複製</button>
+                    </div>
+                    <pre id="generatedCSS"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 設計工具核心功能
+        class DesignTool {
+            constructor() {
+                this.currentDesign = {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        background: '#ffffff',
+                        text: '#333333'
+                    },
+                    typography: {
+                        titleSize: '32px',
+                        bodySize: '16px',
+                        fontWeight: '400'
+                    },
+                    layout: {
+                        borderRadius: '10px',
+                        padding: '20px',
+                        shadowIntensity: '10'
+                    },
+                    animation: {
+                        enabled: true,
+                        speed: '0.3s'
+                    }
+                };
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.updatePreview();
+            }
+            
+            bindEvents() {
+                // 顏色控制
+                document.getElementById('primaryColor').addEventListener('input', (e) => {
+                    this.currentDesign.colors.primary = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('secondaryColor').addEventListener('input', (e) => {
+                    this.currentDesign.colors.secondary = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('backgroundColor').addEventListener('input', (e) => {
+                    this.currentDesign.colors.background = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('textColor').addEventListener('input', (e) => {
+                    this.currentDesign.colors.text = e.target.value;
+                    this.updatePreview();
+                });
+                
+                // 字體控制
+                document.getElementById('titleSize').addEventListener('input', (e) => {
+                    this.currentDesign.typography.titleSize = e.target.value + 'px';
+                    document.getElementById('titleSizeValue').textContent = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('bodySize').addEventListener('input', (e) => {
+                    this.currentDesign.typography.bodySize = e.target.value + 'px';
+                    document.getElementById('bodySizeValue').textContent = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('fontWeight').addEventListener('change', (e) => {
+                    this.currentDesign.typography.fontWeight = e.target.value;
+                    this.updatePreview();
+                });
+                
+                // 佈局控制
+                document.getElementById('borderRadius').addEventListener('input', (e) => {
+                    this.currentDesign.layout.borderRadius = e.target.value + 'px';
+                    document.getElementById('borderRadiusValue').textContent = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('padding').addEventListener('input', (e) => {
+                    this.currentDesign.layout.padding = e.target.value + 'px';
+                    document.getElementById('paddingValue').textContent = e.target.value;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('shadowIntensity').addEventListener('input', (e) => {
+                    this.currentDesign.layout.shadowIntensity = e.target.value;
+                    document.getElementById('shadowIntensityValue').textContent = e.target.value;
+                    this.updatePreview();
+                });
+                
+                // 動畫控制
+                document.getElementById('enableAnimations').addEventListener('change', (e) => {
+                    this.currentDesign.animation.enabled = e.target.checked;
+                    this.updatePreview();
+                });
+                
+                document.getElementById('animationSpeed').addEventListener('change', (e) => {
+                    this.currentDesign.animation.speed = e.target.value;
+                    this.updatePreview();
+                });
+            }
+            
+            updatePreview() {
+                const design = this.currentDesign;
+                
+                // 更新預覽元素樣式
+                const previewElement = document.getElementById('previewElement');
+                const previewTitle = document.getElementById('previewTitle');
+                const previewText = document.getElementById('previewText');
+                const previewButton = document.getElementById('previewButton');
+                const previewCard = document.getElementById('previewCard');
+                
+                // 應用顏色
+                previewElement.style.backgroundColor = design.colors.background;
+                previewElement.style.color = design.colors.text;
+                previewTitle.style.color = design.colors.primary;
+                previewButton.style.background = `linear-gradient(135deg, ${design.colors.primary} 0%, ${design.colors.secondary} 100%)`;
+                previewButton.style.color = 'white';
+                
+                // 應用字體
+                previewTitle.style.fontSize = design.typography.titleSize;
+                previewTitle.style.fontWeight = design.typography.fontWeight;
+                previewText.style.fontSize = design.typography.bodySize;
+                previewText.style.fontWeight = design.typography.fontWeight;
+                
+                // 應用佈局
+                previewElement.style.borderRadius = design.layout.borderRadius;
+                previewElement.style.padding = design.layout.padding;
+                previewCard.style.borderRadius = design.layout.borderRadius;
+                previewCard.style.padding = design.layout.padding;
+                
+                // 應用陰影
+                const shadowIntensity = parseInt(design.layout.shadowIntensity);
+                previewElement.style.boxShadow = `0 ${shadowIntensity}px ${shadowIntensity * 2}px rgba(0,0,0,0.1)`;
+                previewCard.style.boxShadow = `0 ${shadowIntensity}px ${shadowIntensity * 2}px rgba(0,0,0,0.1)`;
+                
+                // 應用動畫
+                if (design.animation.enabled) {
+                    const transition = `all ${design.animation.speed} ease`;
+                    previewElement.style.transition = transition;
+                    previewButton.style.transition = transition;
+                    previewCard.style.transition = transition;
+                } else {
+                    previewElement.style.transition = 'none';
+                    previewButton.style.transition = 'none';
+                    previewCard.style.transition = 'none';
+                }
+                
+                // 更新預覽區域背景
+                document.getElementById('previewContent').style.backgroundColor = design.colors.background;
+                document.getElementById('previewContent').style.color = design.colors.text;
+            }
+            
+            generateCSS() {
+                const design = this.currentDesign;
+                const shadowIntensity = parseInt(design.layout.shadowIntensity);
+                
+                return `/* 設計工具生成的CSS */
+:root {
+  --primary-color: ${design.colors.primary};
+  --secondary-color: ${design.colors.secondary};
+  --background-color: ${design.colors.background};
+  --text-color: ${design.colors.text};
+  --border-radius: ${design.layout.borderRadius};
+  --padding: ${design.layout.padding};
+  --shadow-intensity: ${shadowIntensity}px;
+  --animation-speed: ${design.animation.speed};
+}
+
+/* 基礎樣式 */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-size: ${design.typography.bodySize};
+  font-weight: ${design.typography.fontWeight};
+}
+
+/* 標題樣式 */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--primary-color);
+  font-weight: ${design.typography.fontWeight};
+}
+
+h1 { font-size: calc(${design.typography.titleSize} * 1.5); }
+h2 { font-size: calc(${design.typography.titleSize} * 1.2); }
+h3 { font-size: ${design.typography.titleSize}; }
+
+/* 按鈕樣式 */
+.btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  font-size: ${design.typography.bodySize};
+  cursor: pointer;
+  ${design.animation.enabled ? `transition: all var(--animation-speed) ease;` : ''}
+  box-shadow: 0 var(--shadow-intensity) calc(var(--shadow-intensity) * 2) rgba(0,0,0,0.1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 calc(var(--shadow-intensity) * 1.5) calc(var(--shadow-intensity) * 3) rgba(0,0,0,0.2);
+}
+
+/* 卡片樣式 */
+.card {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  box-shadow: 0 var(--shadow-intensity) calc(var(--shadow-intensity) * 2) rgba(0,0,0,0.1);
+  ${design.animation.enabled ? `transition: all var(--animation-speed) ease;` : ''}
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 calc(var(--shadow-intensity) * 2) calc(var(--shadow-intensity) * 4) rgba(0,0,0,0.15);
+}`;
+            }
+        }
+        
+        // 初始化設計工具
+        const designTool = new DesignTool();
+        
+        // 預設主題
+        function applyPreset(theme) {
+            const presets = {
+                blue: {
+                    primary: '#667eea',
+                    secondary: '#764ba2',
+                    background: '#ffffff',
+                    text: '#333333'
+                },
+                green: {
+                    primary: '#28a745',
+                    secondary: '#20c997',
+                    background: '#ffffff',
+                    text: '#333333'
+                },
+                purple: {
+                    primary: '#6f42c1',
+                    secondary: '#e83e8c',
+                    background: '#ffffff',
+                    text: '#333333'
+                },
+                orange: {
+                    primary: '#fd7e14',
+                    secondary: '#ffc107',
+                    background: '#ffffff',
+                    text: '#333333'
+                }
+            };
+            
+            const preset = presets[theme];
+            if (preset) {
+                document.getElementById('primaryColor').value = preset.primary;
+                document.getElementById('secondaryColor').value = preset.secondary;
+                document.getElementById('backgroundColor').value = preset.background;
+                document.getElementById('textColor').value = preset.text;
+                
+                designTool.currentDesign.colors = preset;
+                designTool.updatePreview();
+            }
+        }
+        
+        // 應用設計
+        function applyDesign() {
+            const css = designTool.generateCSS();
+            
+            // 創建或更新樣式表
+            let styleSheet = document.getElementById('generatedStyles');
+            if (!styleSheet) {
+                styleSheet = document.createElement('style');
+                styleSheet.id = 'generatedStyles';
+                document.head.appendChild(styleSheet);
+            }
+            
+            styleSheet.textContent = css;
+            alert('✅ 設計已應用到當前頁面！');
+        }
+        
+        // 重置設計
+        function resetDesign() {
+            if (confirm('確定要重置所有設置嗎？')) {
+                // 重置為默認值
+                document.getElementById('primaryColor').value = '#667eea';
+                document.getElementById('secondaryColor').value = '#764ba2';
+                document.getElementById('backgroundColor').value = '#ffffff';
+                document.getElementById('textColor').value = '#333333';
+                document.getElementById('titleSize').value = '32';
+                document.getElementById('bodySize').value = '16';
+                document.getElementById('fontWeight').value = '400';
+                document.getElementById('borderRadius').value = '10';
+                document.getElementById('padding').value = '20';
+                document.getElementById('shadowIntensity').value = '10';
+                document.getElementById('enableAnimations').checked = true;
+                document.getElementById('animationSpeed').value = '0.3s';
+                
+                // 更新顯示值
+                document.getElementById('titleSizeValue').textContent = '32';
+                document.getElementById('bodySizeValue').textContent = '16';
+                document.getElementById('borderRadiusValue').textContent = '10';
+                document.getElementById('paddingValue').textContent = '20';
+                document.getElementById('shadowIntensityValue').textContent = '10';
+                
+                // 重新初始化設計工具
+                designTool.currentDesign = {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        background: '#ffffff',
+                        text: '#333333'
+                    },
+                    typography: {
+                        titleSize: '32px',
+                        bodySize: '16px',
+                        fontWeight: '400'
+                    },
+                    layout: {
+                        borderRadius: '10px',
+                        padding: '20px',
+                        shadowIntensity: '10'
+                    },
+                    animation: {
+                        enabled: true,
+                        speed: '0.3s'
+                    }
+                };
+                
+                designTool.updatePreview();
+                alert('🔄 設計已重置為默認值！');
+            }
+        }
+        
+        // 導出CSS
+        function exportCSS() {
+            const css = designTool.generateCSS();
+            const codeOutput = document.getElementById('codeOutput');
+            const generatedCSS = document.getElementById('generatedCSS');
+            
+            generatedCSS.textContent = css;
+            codeOutput.style.display = 'block';
+            
+            // 滾動到代碼區域
+            codeOutput.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 複製代碼
+        function copyCode() {
+            const css = document.getElementById('generatedCSS').textContent;
+            navigator.clipboard.writeText(css).then(() => {
+                const copyBtn = event.target;
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '已複製！';
+                copyBtn.style.background = '#27ae60';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#3498db';
+                }, 2000);
+            });
+        }
+        
+        // 添加懸停效果
+        document.addEventListener('DOMContentLoaded', function() {
+            // 為預覽元素添加懸停效果
+            const previewElements = document.querySelectorAll('.preview-element');
+            previewElements.forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    if (designTool.currentDesign.animation.enabled) {
+                        this.style.transform = 'translateY(-5px) scale(1.02)';
+                    }
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    if (designTool.currentDesign.animation.enabled) {
+                        this.style.transform = 'translateY(0) scale(1)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

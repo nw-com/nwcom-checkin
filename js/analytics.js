@@ -267,8 +267,8 @@ class AnalyticsManager {
                 datasets: [{
                     label: '每日打卡次數',
                     data: data,
-                    borderColor: '#007bff',
-                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
                     tension: 0.4
                 }]
             },
@@ -354,7 +354,7 @@ class AnalyticsManager {
                 labels: labels,
                 datasets: [{
                     data: data,
-                    backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545']
+                    backgroundColor: ['#dc2626', '#28a745', '#ffc107', '#dc3545']
                 }]
             },
             options: {
@@ -397,7 +397,7 @@ class AnalyticsManager {
                 datasets: [{
                     label: '每日工作時長（小時）',
                     data: data,
-                    backgroundColor: '#17a2b8'
+                    backgroundColor: '#dc2626'
                 }]
             },
             options: {

@@ -12,6 +12,7 @@ class CheckinManager {
     init() {
         this.setupEventListeners();
         this.loadTodayCheckin();
+        this.loadCheckinHistory();
         this.setupMap();
     }
 
@@ -50,7 +51,7 @@ class CheckinManager {
                 border-radius: 8px;
             ">
                 <div style="text-align: center;">
-                    <i class="fas fa-map-marked-alt" style="font-size: 48px; margin-bottom: 10px; color: #667eea;"></i>
+                    <i class="fas fa-map-marked-alt" style="font-size: 48px; margin-bottom: 10px; color: #dc2626;"></i>
                     <p>地圖載入中...</p>
                     <p style="font-size: 12px; margin-top: 5px;">點擊打卡按鈕獲取位置</p>
                 </div>
@@ -155,9 +156,46 @@ class CheckinManager {
                 };
                 this.isCheckedIn = !checkinData.checkoutTime;
                 this.updateCheckinButton();
+                this.updateTodayRecord();
+            } else {
+                this.updateTodayRecordEmpty();
             }
         } catch (error) {
             console.error('載入今日打卡記錄失敗:', error);
+            this.updateTodayRecordEmpty();
+        }
+    }
+
+    // 載入打卡歷史記錄
+    async loadCheckinHistory() {
+        try {
+            const user = window.authManager.currentUser;
+            if (!user) return;
+
+            // 載入最近30天的打卡記錄
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            const checkinSnapshot = await firebaseApp.db
+                .collection('checkins')
+                .where('userId', '==', user.uid)
+                .where('checkinTimestamp', '>=', firebase.firestore.Timestamp.fromDate(thirtyDaysAgo))
+                .orderBy('checkinTimestamp', 'desc')
+                .limit(20)
+                .get();
+
+            const checkinHistory = [];
+            checkinSnapshot.forEach(doc => {
+                checkinHistory.push({
+                    id: doc.id,
+                    ...doc.data()
+                });
+            });
+
+            this.updateCheckinHistory(checkinHistory);
+        } catch (error) {
+            console.error('載入打卡歷史記錄失敗:', error);
+            this.updateCheckinHistory([]);
         }
     }
 
@@ -228,6 +266,7 @@ class CheckinManager {
             this.isCheckedIn = true;
             
             this.updateCheckinButton();
+            this.updateTodayRecord();
             this.showCheckinSuccess('簽到成功！');
 
             // 如果位置無效，建立異常提醒
@@ -266,6 +305,7 @@ class CheckinManager {
             this.isCheckedIn = false;
             
             this.updateCheckinButton();
+            this.updateTodayRecord();
             this.showCheckinSuccess('簽退成功！');
 
         } catch (error) {
@@ -311,17 +351,109 @@ class CheckinManager {
         return R * c;
     }
 
+    // 更新今日打卡記錄顯示
+    updateTodayRecord() {
+        const recordDiv = document.getElementById('checkin-record');
+        if (!recordDiv || !this.todayCheckin) return;
+
+        const checkinTime = this.todayCheckin.checkinTime ? 
+            new Date(this.todayCheckin.checkinTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : 
+            '未打卡';
+        
+        const checkoutTime = this.todayCheckin.checkoutTime ? 
+            new Date(this.todayCheckin.checkoutTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : 
+            '未下班';
+
+        let workDuration = '0小時0分';
+        if (this.todayCheckin.checkinTime && this.todayCheckin.checkoutTime) {
+            const duration = new Date(this.todayCheckin.checkoutTime) - new Date(this.todayCheckin.checkinTime);
+            const hours = Math.floor(duration / (1000 * 60 * 60));
+            const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+            workDuration = `${hours}小時${minutes}分`;
+        }
+
+        recordDiv.innerHTML = `
+            <div class="checkin-record-item">
+                <span>上班時間:</span>
+                <span class="checkin-time">${checkinTime}</span>
+            </div>
+            <div class="checkin-record-item">
+                <span>下班時間:</span>
+                <span class="checkout-time">${checkoutTime}</span>
+            </div>
+            ${this.todayCheckin.checkoutTime ? `
+                <div class="checkin-record-item">
+                    <span>工作時長:</span>
+                    <span class="work-duration">${workDuration}</span>
+                </div>
+            ` : ''}
+        `;
+    }
+
+    // 更新今日記錄為空狀態
+    updateTodayRecordEmpty() {
+        const recordDiv = document.getElementById('checkin-record');
+        if (recordDiv) {
+            recordDiv.innerHTML = '<div class="checkin-record-item">今日尚無打卡記錄</div>';
+        }
+    }
+
+    // 更新打卡歷史記錄顯示
+    updateCheckinHistory(checkinHistory) {
+        const historyTbody = document.getElementById('checkin-history-tbody');
+        if (!historyTbody) return;
+
+        if (checkinHistory.length === 0) {
+            historyTbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #666;">尚無打卡歷史記錄</td></tr>';
+            return;
+        }
+
+        historyTbody.innerHTML = checkinHistory.map(record => {
+            const checkinTime = record.checkinTime ? 
+                new Date(record.checkinTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : 
+                '-';
+            
+            const checkoutTime = record.checkoutTime ? 
+                new Date(record.checkoutTime).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }) : 
+                '-';
+
+            let workDuration = '-';
+            if (record.checkinTime && record.checkoutTime) {
+                const duration = new Date(record.checkoutTime) - new Date(record.checkinTime);
+                const hours = Math.floor(duration / (1000 * 60 * 60));
+                const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+                workDuration = `${hours}小時${minutes}分`;
+            }
+
+            const date = new Date(record.date).toLocaleDateString('zh-TW');
+            const status = record.checkoutTime ? '已完成' : '進行中';
+            const statusClass = record.checkoutTime ? 'success' : 'warning';
+
+            return `
+                <tr>
+                    <td>${date}</td>
+                    <td><span class="checkin-time">${checkinTime}</span></td>
+                    <td><span class="checkout-time">${checkoutTime}</span></td>
+                    <td><span class="work-duration">${workDuration}</span></td>
+                    <td><span class="badge badge-${statusClass}">${status}</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
     // 更新打卡按鈕狀態
     updateCheckinButton() {
         const checkinBtn = document.getElementById('checkin-btn');
         if (!checkinBtn) return;
 
         if (this.isCheckedIn) {
-            checkinBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i>簽退';
-            checkinBtn.className = 'btn btn-warning';
+            checkinBtn.textContent = '下班打卡';
+            checkinBtn.classList.remove('btn-primary');
+            checkinBtn.classList.add('btn-danger');
         } else {
-            checkinBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i>打卡';
-            checkinBtn.className = 'btn btn-success';
+            checkinBtn.textContent = '上班打卡';
+            checkinBtn.classList.remove('btn-danger');
+            checkinBtn.classList.add('btn-primary');
         }
     }
 
@@ -331,7 +463,7 @@ class CheckinManager {
         if (locationInfo) {
             locationInfo.innerHTML = `
                 <div style="margin-bottom: 10px;">
-                    <i class="fas fa-info-circle" style="color: #667eea; margin-right: 5px;"></i>
+                    <i class="fas fa-info-circle" style="color: #dc2626; margin-right: 5px;"></i>
                     <strong>位置資訊</strong>
                 </div>
                 <div style="font-size: 12px; color: #666;">
