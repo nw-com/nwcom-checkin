@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages 設定指南 - 西北勤務管理系統</title>
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 5px solid #28a745;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 10px;
+            position: relative;
+        }
+        .step-number {
+            position: absolute;
+            left: -15px;
+            top: 20px;
+            background: #28a745;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .step h3 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 20px;
+            margin-left: 20px;
+        }
+        .step p {
+            line-height: 1.8;
+            color: #555;
+            margin-bottom: 15px;
+        }
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .screenshot {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            font-style: italic;
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 8px 5px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        .important {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        .url-example {
+            background: #e8f5e8;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 16px;
+            text-align: center;
+            color: #155724;
+        }
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .status-ready {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .checklist {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .checklist h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checklist ul {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+        .checklist input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 GitHub Pages 設定完整指南</h1>
+        <p style="text-align: center; color: #666; font-size: 18px; margin-bottom: 30px;">
+            讓您的西北勤務管理系統快速上線！
+        </p>
+
+        <div class="important">
+            <strong>🎯 開始之前：</strong> 請確保已經執行了快速部署腳本（quick-deploy.bat）
+        </div>
+
+        <!-- 步驟 1 -->
+        <div class="step">
+            <div class="step-number">1</div>
+            <h3>🔑 登入 GitHub 並找到您的倉庫</h3>
+            <p>
+                1. 前往 <a href="https://github.com" target="_blank">GitHub.com</a> 並登入<br>
+                2. 點擊右上角的頭像 → "Your repositories"<br>
+                3. 找到您的 "nwcom-checkin" 倉庫並點擊進入
+            </p>
+            <div class="screenshot">
+                📱 截圖：GitHub 倉庫列表頁面
+            </div>
+        </div>
+
+        <!-- 步驟 2 -->
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>⚙️ 進入 Settings 設定頁面</h3>
+            <p>
+                1. 在倉庫頁面中，點擊頂部的 "Settings" 標籤<br>
+                2. 如果找不到，確認您有足夠的權限<br>
+                3. 滾動到頁面下方找到 "Pages" 選項
+            </p>
+            <div class="screenshot">
+                📱 截圖：Settings 選項位置
+            </div>
+        </div>
+
+        <!-- 步驟 3 -->
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>📄 找到 Pages 設定</h3>
+            <p>
+                1. 在左側選單中點擊 "Pages"<br>
+                2. 您會看到 "GitHub Pages" 設定區域<br>
+                3. 目前狀態應該顯示 "None" 或 "Not published"
+            </p>
+            <div class="screenshot">
+                📱 截圖：Pages 設定位置
+            </div>
+        </div>
+
+        <!-- 步驟 4 -->
+        <div class="step">
+            <div class="step-number">4</div>
+            <h3>🎯 設定部署來源</h3>
+            <p>
+                1. 在 "Source" 區域，點擊下拉選單<br>
+                2. 選擇 "Deploy from a branch"<br>
+                3. 在 "Branch" 下拉選單中選擇：<br>
+                &nbsp;&nbsp;&nbsp;• 通常選擇 "main"（新倉庫）<br>
+                &nbsp;&nbsp;&nbsp;• 或選擇 "master"（舊倉庫）<br>
+                4. 文件夾選擇 "/ (root)"
+            </p>
+            <div class="code-block">
+Source: Deploy from a branch
+Branch: main
+Folder: / (root)
+            </div>
+        </div>
+
+        <!-- 步驟 5 -->
+        <div class="step">
+            <div class="step-number">5</div>
+            <h3>💾 保存設定</h3>
+            <p>
+                1. 點擊藍色的 "Save" 按鈕<br>
+                2. 頁面會顯示 "Your site is ready to be published"<br>
+                3. 記下提供的網址，格式如下：
+            </p>
+            <div class="url-example">
+https://[您的用戶名].github.io/[倉庫名稱]/
+            </div>
+        </div>
+
+        <!-- 步驟 6 -->
+        <div class="step">
+            <div class="step-number">6</div>
+            <h3>⏰ 等待部署完成</h3>
+            <p>
+                1. GitHub Pages 部署需要 2-5 分鐘<br>
+                2. 您會看到綠色的成功訊息<br>
+                3. 如果看到紅色錯誤，請檢查分支設定
+            </p>
+            <div class="status-indicator status-ready">
+                ✅ 您的網站已成功發布！
+            </div>
+        </div>
+
+        <div class="highlight">
+            <strong>🎉 恭喜！</strong> 您的西北勤務管理系統現在可以通過 GitHub Pages 訪問了！
+        </div>
+
+        <div class="checklist">
+            <h4>✅ 完成檢查清單</h4>
+            <ul>
+                <li><input type="checkbox" id="check1"> <label for="check1">已登入 GitHub</label></li>
+                <li><input type="checkbox" id="check2"> <label for="check2">找到倉庫 Settings</label></li>
+                <li><input type="checkbox" id="check3"> <label for="check3">進入 Pages 設定</label></li>
+                <li><input type="checkbox" id="check4"> <label for="check4">選擇 Deploy from a branch</label></li>
+                <li><input type="checkbox" id="check5"> <label for="check5">選擇正確的分支</label></li>
+                <li><input type="checkbox" id="check6"> <label for="check6">點擊 Save 保存</label></li>
+                <li><input type="checkbox" id="check7"> <label for="check7">等待 2-5 分鐘</label></li>
+            </ul>
+        </div>
+
+        <div class="important">
+            <strong>💡 提示：</strong>
+            <ul>
+                <li>如果 10 分鐘後仍無法訪問，請確認倉庫是 Public（公開）</li>
+                <li>確保已經推送了代碼到 GitHub</li>
+                <li>檢查分支名稱是否正確（main vs master）</li>
+            </ul>
+        </div>
+
+        <div class="navigation">
+            <a href="test.html" class="btn">🏠 返回測試頁面</a>
+            <a href="firebase-setup.html" class="btn btn-warning">🔥 下一步：Firebase 設定</a>
+            <a href="#" class="btn btn-success" onclick="window.open(getGitHubURL(), '_blank')">🌐 訪問我的網站</a>
+        </div>
+    </div>
+
+    <script>
+        function getGitHubURL() {
+            // 這個函數會嘗試生成 GitHub Pages URL
+            // 實際使用時需要用戶手動替換用戶名和倉庫名
+            const currentPath = window.location.pathname;
+            const pathParts = currentPath.split('/');
+            const repoName = pathParts[pathParts.length - 2] || 'nwcom-checkin';
+            
+            return `https://[您的用戶名].github.io/${repoName}/`;
+        }
+
+        // 自動檢查完成狀態
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = document.querySelectorAll('input[type="checkbox"]:checked').length;
+                const total = document.querySelectorAll('input[type="checkbox"]').length;
+                
+                if (allChecked === total) {
+                    setTimeout(() => {
+                        alert('🎉 恭喜！您已經完成了 GitHub Pages 的所有設定步驟！');
+                    }, 500);
+                }
+            });
+        });
+
+        // 頁面載入提示
+        window.addEventListener('load', function() {
+            console.log('%c🌐 GitHub Pages 設定指南已載入', 'font-size: 16px; color: #28a745; font-weight: bold;');
+            console.log('%c記得按順序完成每個步驟！', 'font-size: 14px; color: #667eea;');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西北勤務管理系統</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <!-- 登入頁面 -->
+        <div id="login-page" class="page">
+            <div class="login-container">
+                <div class="login-box">
+                    <div class="logo">
+                        <i class="fas fa-shield-alt"></i>
+                        <h1>西北勤務管理系統</h1>
+                    </div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <input type="email" id="email" placeholder="電子郵件" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="password" placeholder="密碼" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">登入</button>
+                    </form>
+                    <div class="login-error" id="login-error"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主系統頁面 -->
+        <div id="main-page" class="page hidden">
+            <!-- 側邊導航欄 -->
+            <nav class="sidebar">
+                <div class="sidebar-header">
+                    <h3>西北勤務系統</h3>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a href="#" data-page="dashboard"><i class="fas fa-tachometer-alt"></i>儀表板</a></li>
+                    <li><a href="#" data-page="checkin"><i class="fas fa-map-marker-alt"></i>定位打卡</a></li>
+                    <li><a href="#" data-page="schedule"><i class="fas fa-calendar-alt"></i>勤務排班</a></li>
+                    <li><a href="#" data-page="settings"><i class="fas fa-cog"></i>帳號設定</a></li>
+                    <li><a href="#" data-page="analytics"><i class="fas fa-chart-bar"></i>數據分析</a></li>
+                </ul>
+                <div class="sidebar-footer">
+                    <button id="logout-btn" class="btn btn-logout">
+                        <i class="fas fa-sign-out-alt"></i>登出
+                    </button>
+                </div>
+            </nav>
+
+            <!-- 主要內容區域 -->
+            <main class="main-content">
+                <header class="top-header">
+                    <div class="user-info">
+                        <span id="user-name"></span>
+                        <span id="user-role" class="role-badge"></span>
+                    </div>
+                </header>
+
+                <div class="content-area">
+                    <!-- 儀表板 -->
+                    <div id="dashboard" class="content-page">
+                        <h2>儀表板</h2>
+                        <div class="dashboard-stats">
+                            <div class="stat-card">
+                                <i class="fas fa-users"></i>
+                                <div class="stat-info">
+                                    <h3>在勤人數</h3>
+                                    <span id="active-staff">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-clock"></i>
+                                <div class="stat-info">
+                                    <h3>今日出勤</h3>
+                                    <span id="today-attendance">0</span>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div class="stat-info">
+                                    <h3>異常提醒</h3>
+                                    <span id="alerts">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 定位打卡 -->
+                    <div id="checkin" class="content-page hidden">
+                        <h2>定位打卡</h2>
+                        <div class="checkin-container">
+                            <div id="map" class="map-container"></div>
+                            <div class="checkin-controls">
+                                <button id="checkin-btn" class="btn btn-success">
+                                    <i class="fas fa-map-marker-alt"></i>打卡
+                                </button>
+                                <div id="location-info"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 勤務排班 -->
+                    <div id="schedule" class="content-page hidden">
+                        <h2>勤務排班</h2>
+                        <div class="schedule-container">
+                            <div class="schedule-calendar">
+                                <div id="calendar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 帳號設定 -->
+                    <div id="settings" class="content-page hidden">
+                        <h2>帳號設定</h2>
+                        <div class="settings-container">
+                            <form id="settings-form">
+                                <div class="form-group">
+                                    <label>姓名</label>
+                                    <input type="text" id="settings-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>電子郵件</label>
+                                    <input type="email" id="settings-email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>新密碼</label>
+                                    <input type="password" id="settings-new-password">
+                                </div>
+                                <button type="submit" class="btn btn-primary">更新設定</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 數據分析 -->
+                    <div id="analytics" class="content-page hidden">
+                        <div class="analytics-header">
+                            <h2>數據分析</h2>
+                            <div class="analytics-controls">
+                                <select id="analytics-date-range" class="form-control">
+                                    <option value="7days">最近7天</option>
+                                    <option value="30days">最近30天</option>
+                                    <option value="90days">最近90天</option>
+                                    <option value="thisMonth">本月</option>
+                                    <option value="lastMonth">上個月</option>
+                                </select>
+                                <button id="update-analytics" class="btn btn-primary">
+                                    <i class="fas fa-sync-alt"></i> 更新
+                                </button>
+                                <button id="export-report" class="btn btn-success">
+                                    <i class="fas fa-download"></i> 匯出報表
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="analytics-loading" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>載入分析數據中...</p>
+                        </div>
+
+                        <!-- 統計卡片 -->
+                        <div class="analytics-cards">
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-checkins">0</h3>
+                                    <p>總打卡次數</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="on-time-rate">0%</h3>
+                                    <p>準時率</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-schedules">0</h3>
+                                    <p>總排班次數</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="active-users">0</h3>
+                                    <p>活躍人數</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="total-alerts">0</h3>
+                                    <p>異常提醒</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3 id="avg-work-hours">0.0 小時</h3>
+                                    <p>平均工作時長</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 圖表區域 -->
+                        <div class="analytics-charts">
+                            <div class="chart-container">
+                                <h4>打卡趨勢</h4>
+                                <canvas id="checkin-trend-chart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h4>使用者活動</h4>
+                                <canvas id="user-activity-chart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h4>排班分布</h4>
+                                <canvas id="schedule-chart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <h4>工作時長分析</h4>
+                                <canvas id="work-hours-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- 詳細數據表格 -->
+                        <div class="analytics-tables">
+                            <div class="table-container">
+                                <h4>最近打卡記錄</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>日期</th>
+                                                <th>人員</th>
+                                                <th>上班時間</th>
+                                                <th>下班時間</th>
+                                                <th>位置</th>
+                                                <th>狀態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="checkin-table-body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <h4>最近排班記錄</h4>
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>日期</th>
+                                                <th>人員</th>
+                                                <th>班次</th>
+                                                <th>開始時間</th>
+                                                <th>結束時間</th>
+                                                <th>狀態</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="schedule-table-body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 應用程式腳本 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/role-manager.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/checkin.js"></script>
+    <script src="js/schedule.js"></script>
+    <script src="js/settings.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
