@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西北勤務管理系統</title>
+    <link rel="stylesheet" href="ccs/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.waves.min.js"></script>
+</head>
+<body>
+    <!-- 登入頁面 -->
+    <div id="loginPage" class="login-page">
+        <div id="vanta-bg" class="vanta-background"></div>
+        <div class="login-container">
+            <div class="login-header">
+                <div class="logo-animation">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1 class="system-title">西北勤務管理系統</h1>
+                <p class="version">v1.0.0</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="username" placeholder="登入帳號" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="input-container">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" placeholder="登入密碼" required>
+                        <button type="button" class="toggle-password" onclick="togglePassword()">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"></span>
+                        記住我
+                    </label>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    登入系統
+                </button>
+            </form>
+            
+            <div id="loginError" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- 主頁面 -->
+    <div id="mainPage" class="main-page" style="display: none;">
+        <!-- 手機版側邊欄 -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2 class="sidebar-title">西北勤務管理系統</h2>
+                <p class="sidebar-version">v1.0.0</p>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name" id="userDisplayName">使用者</span>
+                    <span class="user-role" id="userRole">勤務人員</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>儀表板</span>
+                </button>
+                <button class="nav-item" data-page="personal">
+                    <i class="fas fa-user"></i>
+                    <span>個人資訊</span>
+                </button>
+                <button class="nav-item" data-page="checkin">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>定位打卡</span>
+                </button>
+                <button class="nav-item" data-page="schedule">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>勤務排班</span>
+                </button>
+                <button class="nav-item" data-page="leave">
+                    <i class="fas fa-bed"></i>
+                    <span>請假排休</span>
+                </button>
+                <button class="nav-item" data-page="reward">
+                    <i class="fas fa-award"></i>
+                    <span>獎懲登錄</span>
+                </button>
+                <button class="nav-item" data-page="task">
+                    <i class="fas fa-tasks"></i>
+                    <span>任務指派</span>
+                </button>
+                <button class="nav-item" data-page="training">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>教育訓練</span>
+                </button>
+                <button class="nav-item" data-page="community">
+                    <i class="fas fa-building"></i>
+                    <span>社區管理</span>
+                </button>
+                <button class="nav-item" data-page="account">
+                    <i class="fas fa-users"></i>
+                    <span>帳號管理</span>
+                </button>
+                <button class="nav-item" data-page="system">
+                    <i class="fas fa-cog"></i>
+                    <span>系統管理</span>
+                </button>
+                <button class="nav-item logout" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>登出</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- 主要內容區 -->
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <header class="main-header">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">儀表板</h1>
+                <div class="header-actions">
+                    <button class="user-profile-btn" onclick="showUserProfile()">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 子頁面導航 -->
+            <div class="sub-nav" id="subNav">
+                <!-- 動態生成子頁面按鈕 -->
+            </div>
+
+            <!-- 頁面內容 -->
+            <div class="page-content" id="pageContent">
+                <!-- 動態載入頁面內容 -->
+            </div>
+        </div>
+
+        <!-- 遮罩層 -->
+        <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- 應用程式腳本 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
