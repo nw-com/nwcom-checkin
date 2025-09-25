@@ -111,6 +111,17 @@ const DEFAULT_DATA = {
         status: 'active',
         createdAt: new Date()
     },
+    // 新的測試管理員帳號
+    testAdmin: {
+        employeeId: 'ADMIN002',
+        name: '測試管理員',
+        email: 'testadmin@nwcom.com',
+        role: USER_ROLES.ADMIN,
+        department: '資訊部',
+        phone: '02-12345678',
+        status: 'active',
+        createdAt: new Date()
+    },
     // 預設社區資料
     defaultCommunities: [
         {
@@ -188,6 +199,26 @@ async function initializeDefaultData() {
             console.log('預設管理員帳號已創建');
         }
         
+        // 創建測試管理員帳號（如果不存在）
+        const testAdminDoc = await db.collection('users').doc('ADMIN002').get();
+        if (!testAdminDoc.exists) {
+            const testAdminData = {
+                ...DEFAULT_DATA.testAdmin,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            await db.collection('users').doc('ADMIN002').set(testAdminData);
+            console.log('測試管理員帳號已創建');
+            
+            // 創建 Firebase 認證帳號
+            try {
+                await auth.createUserWithEmailAndPassword('testadmin@nwcom.com', 'TestAdmin123!');
+                console.log('測試管理員 Firebase 帳號已創建');
+            } catch (authError) {
+                console.log('Firebase 帳號可能已存在或創建失敗:', authError.message);
+            }
+        }
+        
         // 檢查是否已有社區資料
         const communityQuery = await db.collection('communities').limit(1).get();
         
@@ -204,6 +235,49 @@ async function initializeDefaultData() {
         }
     } catch (error) {
         console.error('初始化預設資料失敗:', error);
+    }
+}
+
+// 快速重設管理員密碼的函數
+async function resetAdminPassword(employeeId, newPassword) {
+    try {
+        console.log(`正在重設 ${employeeId} 的密碼...`);
+        
+        // 獲取使用者資料
+        const userDoc = await db.collection('users').doc(employeeId).get();
+        if (!userDoc.exists) {
+            console.error(`使用者 ${employeeId} 不存在`);
+            return false;
+        }
+        
+        const userData = userDoc.data();
+        const email = userData.email;
+        
+        // 更新 Firebase 認證密碼
+        try {
+            // 先嘗試登入現有帳號來獲取使用者
+            await auth.signInWithEmailAndPassword(email, 'temporary123');
+            const currentUser = auth.currentUser;
+            await currentUser.updatePassword(newPassword);
+            console.log(`密碼重設成功: ${employeeId}`);
+            return true;
+        } catch (loginError) {
+            // 如果登入失敗，可能是密碼錯誤或帳號不存在
+            console.log(`無法登入現有帳號，可能需要手動在 Firebase 主控台重設: ${loginError.message}`);
+            
+            // 創建新帳號（如果不存在）
+            try {
+                await auth.createUserWithEmailAndPassword(email, newPassword);
+                console.log(`已創建新的 Firebase 帳號: ${email}`);
+                return true;
+            } catch (createError) {
+                console.error(`創建 Firebase 帳號失敗: ${createError.message}`);
+                return false;
+            }
+        }
+    } catch (error) {
+        console.error(`重設密碼失敗: ${error.message}`);
+        return false;
     }
 }
 

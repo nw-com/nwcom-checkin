@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自動重設管理員密碼 - 西北勤務管理系統</title>
+    <link rel="stylesheet" href="ccs/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #dc3545;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .header p {
+            color: #6c757d;
+            margin: 0;
+            font-size: 16px;
+        }
+        .status {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .status h3 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .log-container {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 4px 0;
+        }
+        .log-success { color: #2ecc71; }
+        .log-error { color: #e74c3c; }
+        .log-info { color: #3498db; }
+        .log-warning { color: #f39c12; }
+        .result-box {
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+            display: none;
+        }
+        .result-box.error {
+            background: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        .credentials {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border: 2px solid #28a745;
+        }
+        .credentials h4 {
+            color: #28a745;
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .credential-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .credential-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .credential-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .credential-value {
+            color: #dc3545;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-shield-alt" style="font-size: 48px; color: #dc3545; margin-bottom: 20px;"></i>
+            <h1>西北勤務管理系統</h1>
+            <p>自動重設管理員密碼工具</p>
+        </div>
+
+        <div class="status">
+            <h3><i class="fas fa-cog"></i> 系統狀態</h3>
+            <div id="statusText">正在初始化系統...</div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-entry log-info">🚀 系統啟動中...</div>
+        </div>
+
+        <div id="resultContainer" class="result-box">
+            <h4><i class="fas fa-check-circle"></i> 重設成功！</h4>
+            <p>請使用以下帳號密碼登入系統：</p>
+            <div class="credentials">
+                <div class="credential-row">
+                    <span class="credential-label">使用者名稱：</span>
+                    <span class="credential-value" id="resultUsername">-</span>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">密碼：</span>
+                    <span class="credential-value" id="resultPassword">-</span>
+                </div>
+            </div>
+            <p style="color: #dc3545; font-weight: bold; margin-top: 15px;">
+                <i class="fas fa-exclamation-triangle"></i> 登入後請立即修改密碼！
+            </p>
+        </div>
+
+        <div id="actionButtons" class="hidden">
+            <button class="btn btn-success" onclick="goToLogin()">
+                <i class="fas fa-sign-in-alt"></i> 前往登入頁面
+            </button>
+            <button class="btn" onclick="retryReset()">
+                <i class="fas fa-redo"></i> 重新重設
+            </button>
+        </div>
+
+        <div class="footer">
+            <p><i class="fas fa-info-circle"></i> 此工具會自動嘗試重設管理員密碼或建立新的測試帳號</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- 應用程式腳本 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    
+    <script>
+        // 日誌系統
+        function addLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // 更新狀態
+        function updateStatus(message, isError = false) {
+            const statusText = document.getElementById('statusText');
+            statusText.innerHTML = message;
+            statusText.style.color = isError ? '#dc3545' : '#007bff';
+        }
+
+        // 顯示結果
+        function showResult(username, password, isError = false) {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultUsername = document.getElementById('resultUsername');
+            const resultPassword = document.getElementById('resultPassword');
+            const actionButtons = document.getElementById('actionButtons');
+            
+            resultUsername.textContent = username;
+            resultPassword.textContent = password;
+            
+            if (isError) {
+                resultContainer.className = 'result-box error';
+                resultContainer.innerHTML = `
+                    <h4><i class="fas fa-exclamation-triangle"></i> 重設失敗</h4>
+                    <p>所有重設方法都失敗了，請手動檢查系統設定。</p>
+                    <p style="color: #dc3545; margin-top: 15px;">
+                        <strong>錯誤訊息：</strong><br>
+                        ${username}
+                    </p>
+                `;
+            } else {
+                resultContainer.className = 'result-box';
+                resultContainer.innerHTML = `
+                    <h4><i class="fas fa-check-circle"></i> 重設成功！</h4>
+                    <p>請使用以下帳號密碼登入系統：</p>
+                    <div class="credentials">
+                        <div class="credential-row">
+                            <span class="credential-label">使用者名稱：</span>
+                            <span class="credential-value">${username}</span>
+                        </div>
+                        <div class="credential-row">
+                            <span class="credential-label">密碼：</span>
+                            <span class="credential-value">${password}</span>
+                        </div>
+                    </div>
+                    <p style="color: #dc3545; font-weight: bold; margin-top: 15px;">
+                        <i class="fas fa-exclamation-triangle"></i> 登入後請立即修改密碼！
+                    </p>
+                `;
+            }
+            
+            resultContainer.style.display = 'block';
+            actionButtons.classList.remove('hidden');
+        }
+
+        // 自動重設流程
+        async function autoReset() {
+            addLog('🔍 檢查系統狀態...', 'info');
+            updateStatus('正在檢查系統狀態...');
+            
+            try {
+                // 等待 Firebase 初始化
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                addLog('✅ Firebase 初始化完成', 'success');
+                
+                // 嘗試重設管理員密碼
+                addLog('🔑 開始重設 ADMIN001 密碼...', 'info');
+                updateStatus('正在重設管理員密碼...');
+                
+                try {
+                    const result = await authManager.resetAdminPasswordQuick();
+                    addLog('✅ 管理員密碼重設成功！', 'success');
+                    addLog(`📋 新密碼: Admin123!`, 'info');
+                    
+                    showResult('ADMIN001', 'Admin123!');
+                    addLog('🎯 請使用 ADMIN001 / Admin123! 登入系統', 'warning');
+                    
+                } catch (adminError) {
+                    addLog(`❌ 管理員重設失敗: ${adminError.message}`, 'error');
+                    addLog('👤 嘗試建立測試帳號...', 'info');
+                    updateStatus('管理員重設失敗，正在建立測試帳號...');
+                    
+                    try {
+                        const testResult = await authManager.createTestAccount();
+                        addLog('✅ 測試帳號建立成功！', 'success');
+                        addLog(`📋 測試帳號: TEST001 / Test123!`, 'info');
+                        
+                        showResult('TEST001', 'Test123!');
+                        addLog('🎯 請使用 TEST001 / Test123! 登入系統', 'warning');
+                        
+                    } catch (testError) {
+                        addLog(`❌ 測試帳號建立也失敗: ${testError.message}`, 'error');
+                        updateStatus('所有重設方法都失敗了', true);
+                        showResult('系統錯誤', '所有重設方法都失敗，請檢查系統設定', true);
+                    }
+                }
+                
+            } catch (error) {
+                addLog(`❌ 系統錯誤: ${error.message}`, 'error');
+                updateStatus('系統錯誤，請檢查網路連線和設定', true);
+                showResult('系統錯誤', error.message, true);
+            }
+        }
+
+        // 前往登入頁面
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+
+        // 重新嘗試重設
+        function retryReset() {
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('actionButtons').classList.add('hidden');
+            document.getElementById('logContainer').innerHTML = '<div class="log-entry log-info">🔄 重新開始重設流程...</div>';
+            autoReset();
+        }
+
+        // 頁面載入完成後自動開始
+        window.addEventListener('load', () => {
+            addLog('🚀 系統啟動完成，開始自動重設流程...', 'info');
+            updateStatus('正在準備重設管理員密碼...');
+            
+            // 延遲一點時間讓 Firebase 完全初始化
+            setTimeout(autoReset, 3000);
+        });
+
+        console.log('🎯 自動重設系統已載入，等待執行...');
+    </script>
+</body>
+</html>

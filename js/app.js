@@ -492,3 +492,77 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.style.opacity = '1';
     }, 100);
 });
+
+// 重設密碼嘗試計數器
+let resetPasswordClickCount = 0;
+let resetPasswordTimeout = null;
+
+// 重設密碼函數（連點版本號5次）
+async function resetPasswordAttempts() {
+    resetPasswordClickCount++;
+    
+    // 清除之前的計時器
+    if (resetPasswordTimeout) {
+        clearTimeout(resetPasswordTimeout);
+    }
+    
+    // 設定新的計時器，3秒後重置計數
+    resetPasswordTimeout = setTimeout(() => {
+        resetPasswordClickCount = 0;
+        console.log('重設密碼計數器已重置');
+    }, 3000);
+    
+    console.log(`重設密碼點擊次數: ${resetPasswordClickCount}`);
+    
+    if (resetPasswordClickCount >= 5) {
+        // 重置計數器
+        resetPasswordClickCount = 0;
+        
+        // 顯示載入中
+        const loading = nwComApp.showLoading('正在重設管理員密碼...');
+        
+        try {
+            // 呼叫重設密碼功能
+            const result = await authManager.resetAdminPasswordQuick();
+            
+            // 隱藏載入中
+            nwComApp.hideLoading(loading);
+            
+            // 顯示成功訊息
+            nwComApp.showSuccessToast(result.message);
+            
+            // 自動填入登入表單
+            document.getElementById('username').value = result.username;
+            document.getElementById('password').value = result.password;
+            
+            // 顯示提示
+            setTimeout(() => {
+                alert(`管理員帳號已重設完成！\n\n使用者名稱: ${result.username}\n密碼: ${result.password}\n\n請點擊登入按鈕登入系統。`);
+            }, 500);
+            
+        } catch (error) {
+            // 隱藏載入中
+            nwComApp.hideLoading(loading);
+            
+            console.error('重設密碼失敗:', error);
+            nwComApp.showError('重設密碼失敗: ' + error.message);
+            
+            // 嘗試建立測試帳號作為備案
+            try {
+                const testResult = await authManager.createTestAccount();
+                nwComApp.showSuccessToast(testResult.message);
+                
+                // 自動填入登入表單
+                document.getElementById('username').value = testResult.username;
+                document.getElementById('password').value = testResult.password;
+                
+            } catch (testError) {
+                console.error('建立測試帳號也失敗:', testError);
+                alert('無法重設密碼或建立測試帳號，請聯絡系統管理員。');
+            }
+        }
+    } else if (resetPasswordClickCount >= 3) {
+        // 點擊3次後顯示提示
+        nwComApp.showSuccessToast(`再點擊 ${5 - resetPasswordClickCount} 次即可重設管理員密碼`);
+    }
+}

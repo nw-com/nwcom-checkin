@@ -275,6 +275,116 @@ class AuthManager {
         }
     }
 
+    // 快速建立測試帳號（僅供開發測試使用）
+    async createTestAccount() {
+        try {
+            console.log('正在建立測試帳號...');
+            
+            // 測試帳號資料
+            const testUserData = {
+                employeeId: 'TEST001',
+                name: '測試人員',
+                email: 'test001@nwcom.com',
+                role: USER_ROLES.ADMIN,
+                department: '測試部門',
+                phone: '02-12345678',
+                status: 'active',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            // 檢查是否已存在
+            const existingUser = await db.collection('users').doc('TEST001').get();
+            if (existingUser.exists) {
+                console.log('測試帳號已存在');
+                return {
+                    username: 'TEST001',
+                    password: 'Test123!',
+                    message: '測試帳號已存在，請使用 TEST001 / Test123! 登入'
+                };
+            }
+            
+            // 建立使用者資料
+            await db.collection('users').doc('TEST001').set(testUserData);
+            
+            // 建立 Firebase 認證帳號
+            try {
+                await auth.createUserWithEmailAndPassword('test001@nwcom.com', 'Test123!');
+                console.log('測試帳號建立成功');
+                
+                return {
+                    username: 'TEST001',
+                    password: 'Test123!',
+                    message: '測試帳號建立成功！請使用 TEST001 / Test123! 登入'
+                };
+            } catch (authError) {
+                console.log('Firebase 帳號建立失敗:', authError.message);
+                return {
+                    username: 'TEST001',
+                    password: 'Test123!',
+                    message: '使用者資料已建立，但 Firebase 帳號可能已存在。請嘗試使用 TEST001 / Test123! 登入'
+                };
+            }
+            
+        } catch (error) {
+            console.error('建立測試帳號失敗:', error);
+            throw error;
+        }
+    }
+
+    // 快速重設管理員密碼
+    async resetAdminPasswordQuick() {
+        try {
+            console.log('正在重設管理員密碼...');
+            
+            // 重設原始管理員密碼
+            const adminEmail = 'admin@nwcom.com';
+            const newPassword = 'Admin123!';
+            
+            try {
+                // 嘗試登入現有帳號
+                await auth.signInWithEmailAndPassword(adminEmail, 'temporary123');
+                const user = auth.currentUser;
+                await user.updatePassword(newPassword);
+                console.log('管理員密碼重設成功');
+                
+                return {
+                    username: 'ADMIN001',
+                    password: newPassword,
+                    message: '管理員密碼重設成功！請使用 ADMIN001 / Admin123! 登入'
+                };
+            } catch (loginError) {
+                console.log('無法登入現有管理員帳號，嘗試創建新帳號...');
+                
+                try {
+                    await auth.createUserWithEmailAndPassword(adminEmail, newPassword);
+                    console.log('新的管理員 Firebase 帳號已創建');
+                    
+                    return {
+                        username: 'ADMIN001',
+                        password: newPassword,
+                        message: '新的管理員帳號已創建！請使用 ADMIN001 / Admin123! 登入'
+                    };
+                } catch (createError) {
+                    console.error('創建管理員帳號失敗:', createError.message);
+                    
+                    // 如果都失敗，嘗試建立測試帳號
+                    return await this.createTestAccount();
+                }
+            }
+            
+        } catch (error) {
+            console.error('重設管理員密碼失敗:', error);
+            
+            // 如果重設失敗，嘗試建立測試帳號
+            try {
+                return await this.createTestAccount();
+            } catch (testError) {
+                console.error('建立測試帳號也失敗:', testError);
+                throw error;
+            }
+        }
+    }
+
     // 獲取客戶端IP（簡單版本）
     async getClientIP() {
         try {
