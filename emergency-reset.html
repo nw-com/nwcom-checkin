@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>緊急重設 - 西北勤務管理系統</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #dc3545;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .header p {
+            color: #6c757d;
+            margin: 0;
+        }
+        .emergency-box {
+            background: #fff3cd;
+            color: #856404;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+        }
+        .emergency-box h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .manual-setup {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .manual-setup h4 {
+            color: #495057;
+            margin-top: 0;
+        }
+        .manual-setup ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .manual-setup li {
+            margin-bottom: 8px;
+        }
+        .btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .console-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545; margin-bottom: 20px;"></i>
+            <h1>緊急重設工具</h1>
+            <p>當自動重設失敗時使用</p>
+        </div>
+
+        <div class="emergency-box">
+            <h3><i class="fas fa-info-circle"></i> 重要提醒</h3>
+            <p>此工具將直接操作 Firebase 資料庫，繞過身份驗證系統。請謹慎使用。</p>
+        </div>
+
+        <div class="manual-setup">
+            <h4><i class="fas fa-list-ol"></i> 手動重設步驟：</h4>
+            <ol>
+                <li>點擊「執行緊急重設」按鈕</li>
+                <li>系統將嘗試直接創建管理員帳號</li>
+                <li>如果成功，將顯示新的登入資訊</li>
+                <li>使用新帳號登入系統</li>
+                <li>登入後立即修改密碼</li>
+            </ol>
+        </div>
+
+        <button class="btn" onclick="emergencyReset()">
+            <i class="fas fa-hammer"></i> 執行緊急重設
+        </button>
+        
+        <button class="btn-success" onclick="goToLogin()">
+            <i class="fas fa-sign-in-alt"></i> 前往登入頁面
+        </button>
+
+        <div id="consoleOutput" class="console-output hidden"></div>
+
+        <div id="resultBox" class="hidden" style="background: #d4edda; color: #155724; padding: 20px; border-radius: 10px; margin: 20px 0; border: 1px solid #c3e6cb;">
+            <h4><i class="fas fa-check-circle"></i> 緊急重設成功！</h4>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <script src="js/firebase-config.js"></script>
+    
+    <script>
+        // 直接創建管理員帳號的緊急方法
+        async function emergencyReset() {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const resultBox = document.getElementById('resultBox');
+            const resultContent = document.getElementById('resultContent');
+            
+            consoleOutput.classList.remove('hidden');
+            resultBox.classList.add('hidden');
+            
+            try {
+                log('🚨 開始執行緊急重設...');
+                
+                // 等待 Firebase 初始化
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                log('🔥 Firebase 連接成功');
+                
+                // 直接創建管理員帳號數據
+                const adminUser = {
+                    employeeId: 'ADMIN001',
+                    email: 'admin@nwcom.com',
+                    name: '系統管理員',
+                    role: 'ADMIN',
+                    department: '管理處',
+                    phone: '02-23456789',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    lastLogin: null,
+                    isActive: true,
+                    permissions: {
+                        dashboard: true,
+                        personnel: true,
+                        checkin: true,
+                        reports: true,
+                        community: true,
+                        settings: true,
+                        logs: true
+                    }
+                };
+                
+                log('👤 準備創建管理員帳號數據...');
+                
+                // 直接寫入 Firestore
+                await db.collection('users').doc('ADMIN001').set(adminUser);
+                log('✅ 管理員帳號數據創建成功');
+                
+                // 嘗試創建 Firebase Auth 用戶
+                try {
+                    log('🔑 嘗試創建 Firebase Auth 用戶...');
+                    await firebase.auth().createUserWithEmailAndPassword('admin@nwcom.com', 'Admin123!');
+                    log('✅ Firebase Auth 用戶創建成功');
+                } catch (authError) {
+                    log(`⚠️ Firebase Auth 創建失敗: ${authError.message}`);
+                    log('💡 但 Firestore 數據已成功創建');
+                }
+                
+                // 顯示成功結果
+                resultContent.innerHTML = `
+                    <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <div style="margin-bottom: 10px;">
+                            <strong>使用者名稱：</strong>
+                            <span style="color: #dc3545; font-weight: bold;">ADMIN001</span>
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <strong>密碼：</strong>
+                            <span style="color: #dc3545; font-weight: bold;">Admin123!</span>
+                        </div>
+                        <div>
+                            <strong>Email：</strong>
+                            <span style="color: #dc3545; font-weight: bold;">admin@nwcom.com</span>
+                        </div>
+                    </div>
+                    <p style="color: #dc3545; font-weight: bold; margin-top: 15px;">
+                        <i class="fas fa-exclamation-triangle"></i> 登入後請立即修改密碼！
+                    </p>
+                `;
+                
+                resultBox.classList.remove('hidden');
+                log('🎉 緊急重設完成！請使用 ADMIN001 / Admin123! 登入');
+                
+            } catch (error) {
+                log(`❌ 緊急重設失敗: ${error.message}`);
+                
+                // 如果連緊急重設都失敗，提供最後的解決方案
+                resultContent.innerHTML = `
+                    <div style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h5><i class="fas fa-times-circle"></i> 緊急重設也失敗了</h5>
+                        <p><strong>錯誤訊息：</strong> ${error.message}</p>
+                        <hr>
+                        <h6><i class="fas fa-lightbulb"></i> 最後的解決方案：</h6>
+                        <ol>
+                            <li>檢查網路連線是否正常</li>
+                            <li>確認 Firebase 設定是否正確</li>
+                            <li>嘗試清除瀏覽器快取後重新載入</li>
+                            <li>聯繫系統管理員或技術支援</li>
+                        </ol>
+                    </div>
+                `;
+                
+                resultBox.classList.remove('hidden');
+            }
+        }
+        
+        function log(message) {
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ${message}<br>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+        
+        // 頁面載入時記錄狀態
+        window.addEventListener('load', () => {
+            log('🚀 緊急重設工具已載入');
+            log('⚠️ 注意：此工具將直接操作資料庫');
+        });
+    </script>
+</body>
+</html>

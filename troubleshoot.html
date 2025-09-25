@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登入問題排解 - 西北勤務管理系統</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        .header {
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .header p {
+            color: #636e72;
+            margin: 0;
+            font-size: 16px;
+        }
+        .problem-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 5px solid #e17055;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .problem-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .problem-card h3 {
+            color: #2d3436;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+        }
+        .problem-card h3 i {
+            margin-right: 12px;
+            color: #e17055;
+            font-size: 20px;
+        }
+        .problem-card p {
+            color: #636e72;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .solution-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #dee2e6;
+        }
+        .solution-list h4 {
+            color: #00b894;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .solution-list h4 i {
+            margin-right: 8px;
+        }
+        .solution-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f1f2f6;
+            border-radius: 6px;
+            transition: background 0.3s ease;
+        }
+        .solution-item:hover {
+            background: #dfe4ea;
+        }
+        .solution-item i {
+            margin-right: 10px;
+            color: #00b894;
+            width: 16px;
+        }
+        .btn {
+            background: #00b894;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #00a085;
+        }
+        .btn i {
+            margin-right: 8px;
+        }
+        .btn-primary {
+            background: #6c5ce7;
+        }
+        .btn-primary:hover {
+            background: #5f3dc4;
+        }
+        .btn-warning {
+            background: #fdcb6e;
+            color: #2d3436;
+        }
+        .btn-warning:hover {
+            background: #f8b500;
+        }
+        .quick-access {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .quick-access h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        .credentials {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .credential-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+        }
+        .credential-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .credential-label {
+            font-weight: bold;
+        }
+        .credential-value {
+            font-family: monospace;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f1f3f4;
+            color: #636e72;
+            text-align: center;
+        }
+        .emergency {
+            background: #fff3cd;
+            color: #856404;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+        }
+        .emergency h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-tools" style="font-size: 48px; color: #e17055; margin-bottom: 20px;"></i>
+            <h1>登入問題排解中心</h1>
+            <p>無法登入系統？我們提供多種解決方案</p>
+        </div>
+
+        <!-- 快速存取區域 -->
+        <div class="quick-access">
+            <h3><i class="fas fa-bolt"></i> 快速解決方案</h3>
+            <p>試試這些最常用的解決方法：</p>
+            
+            <div class="credentials">
+                <div class="credential-row">
+                    <span class="credential-label">管理員帳號：</span>
+                    <span class="credential-value">ADMIN001</span>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">預設密碼：</span>
+                    <span class="credential-value">Admin123!</span>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">備用帳號：</span>
+                    <span class="credential-value">TEST001</span>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">備用密碼：</span>
+                    <span class="credential-value">Test123!</span>
+                </div>
+            </div>
+            
+            <a href="auto-reset.html" class="btn">
+                <i class="fas fa-magic"></i> 自動重設密碼
+            </a>
+            <a href="firebase-test.html" class="btn btn-primary">
+                <i class="fas fa-network-wired"></i> 測試系統連接
+            </a>
+            <a href="index.html" class="btn btn-warning">
+                <i class="fas fa-sign-in-alt"></i> 返回登入頁面
+            </a>
+        </div>
+
+        <!-- 問題 1: 忘記密碼 -->
+        <div class="problem-card">
+            <h3><i class="fas fa-key"></i> 忘記密碼或密碼錯誤</h3>
+            <p>如果您忘記了密碼，或者系統提示密碼錯誤，請嘗試以下解決方案：</p>
+            
+            <div class="solution-list">
+                <h4><i class="fas fa-lightbulb"></i> 解決方案</h4>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>使用<strong>自動重設工具</strong>：系統會自動重設管理員密碼</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>嘗試<strong>預設密碼</strong>：Admin123! (使用者名稱: ADMIN001)</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>使用<strong>測試帳號</strong>：TEST001 / Test123!</span>
+                </div>
+            </div>
+            
+            <a href="reset-password.html" class="btn">
+                <i class="fas fa-key"></i> 手動重設工具
+            </a>
+            <a href="emergency-reset.html" class="btn btn-primary">
+                <i class="fas fa-hammer"></i> 緊急重設
+            </a>
+        </div>
+
+        <!-- 問題 2: 系統錯誤 -->
+        <div class="problem-card">
+            <h3><i class="fas fa-exclamation-triangle"></i> 系統錯誤或無回應</h3>
+            <p>如果遇到系統錯誤、頁面無法載入或 Firebase 連接問題：</p>
+            
+            <div class="solution-list">
+                <h4><i class="fas fa-lightbulb"></i> 解決方案</h4>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>使用<strong>系統測試工具</strong>檢查 Firebase 連接狀態</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>檢查網路連線是否正常</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>清除瀏覽器快取後重新載入頁面</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>確認 Firebase 專案設定是否正確</span>
+                </div>
+            </div>
+            
+            <a href="firebase-test.html" class="btn">
+                <i class="fas fa-stethoscope"></i> 系統診斷
+            </a>
+        </div>
+
+        <!-- 問題 3: 初次設定 -->
+        <div class="problem-card">
+            <h3><i class="fas fa-cog"></i> 初次安裝或設定問題</h3>
+            <p>如果是第一次使用系統，或需要重新設定管理員帳號：</p>
+            
+            <div class="solution-list">
+                <h4><i class="fas fa-lightbulb"></i> 解決方案</h4>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>使用<strong>手動設定指南</strong>在 Firebase 控制台創建帳號</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>按照步驟創建 Firestore 資料庫和用戶文檔</span>
+                </div>
+                <div class="solution-item">
+                    <i class="fas fa-check"></i>
+                    <span>設定正確的資料庫權限規則</span>
+                </div>
+            </div>
+            
+            <a href="manual-setup.html" class="btn">
+                <i class="fas fa-book"></i> 手動設定指南
+            </a>
+        </div>
+
+        <!-- 緊急情況 -->
+        <div class="emergency">
+            <h4><i class="fas fa-ambulance"></i> 所有方法都失敗了？</h4>
+            <p>如果以上所有方法都無法解決問題，請嘗試：</p>
+            <ol>
+                <li><strong>檢查瀏覽器控制台</strong>：按 F12 查看是否有錯誤訊息</li>
+                <li><strong>更換瀏覽器</strong>：嘗試使用 Chrome、Firefox 或 Edge</li>
+                <li><strong>檢查防火牆設定</strong>：確保允許訪問 Firebase 服務</li>
+                <li><strong>聯繫技術支援</strong>：提供錯誤訊息和系統環境資訊</li>
+            </ol>
+        </div>
+
+        <div class="footer">
+            <p><i class="fas fa-life-ring"></i> 需要更多幫助？</p>
+            <p>請提供具體的錯誤訊息和您嘗試過的解決方案，我們將為您提供針對性的協助。</p>
+            <div style="margin-top: 20px;">
+                <a href="index.html" class="btn btn-success">
+                    <i class="fas fa-home"></i> 返回首頁
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些互動效果
+        document.querySelectorAll('.problem-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.borderLeftColor = '#00b894';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderLeftColor = '#e17055';
+            });
+        });
+
+        // 自動重設功能（如果需要的話）
+        window.addEventListener('load', () => {
+            console.log('🔧 問題排解中心已載入');
+            console.log('💡 建議：先使用自動重設工具，如果失敗再嘗試其他方法');
+        });
+    </script>
+</body>
+</html>

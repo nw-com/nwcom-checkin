@@ -566,3 +566,33 @@ async function resetPasswordAttempts() {
         nwComApp.showSuccessToast(`再點擊 ${5 - resetPasswordClickCount} 次即可重設管理員密碼`);
     }
 }
+
+// 顯示幫助選項
+function showHelpOptions() {
+    const helpHTML = `
+        <div style="text-align: left; max-width: 400px;">
+            <h3 style="color: #dc3545; margin-bottom: 20px;">登入協助</h3>
+            <div style="margin-bottom: 15px;">
+                <strong>🔧 快速解決方案：</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>點擊版本號5次可自動重設密碼</li>
+                    <li>管理員帳號：ADMIN001 / Admin123!</li>
+                    <li>測試帳號：TEST001 / Test123!</li>
+                </ul>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>📋 其他選項：</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li><a href="auto-reset.html" style="color: #dc3545;">自動重設工具</a></li>
+                    <li><a href="troubleshoot.html" style="color: #dc3545;">完整疑難排解</a></li>
+                    <li><a href="firebase-test.html" style="color: #dc3545;">系統連線測試</a></li>
+                </ul>
+            </div>
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; color: #666;">
+                提示：如果所有方法都無效，請檢查網路連線或聯絡系統管理員。
+            </div>
+        </div>
+    `;
+    
+    nwComApp.showModal('登入協助', helpHTML);
+}

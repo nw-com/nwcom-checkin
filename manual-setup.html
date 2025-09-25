@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手動設定指南 - 西北勤務管理系統</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 700px;
+            width: 100%;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #2d3436;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .header p {
+            color: #636e72;
+            margin: 0;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+            border-left: 4px solid #74b9ff;
+        }
+        .step h3 {
+            color: #2d3436;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+        .step h3 i {
+            margin-right: 10px;
+            color: #74b9ff;
+        }
+        .step-content {
+            margin-top: 15px;
+        }
+        .step-content ol, .step-content ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .step-content li {
+            margin-bottom: 8px;
+        }
+        .code-block {
+            background: #2d3436;
+            color: #ddd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #ffeaa7;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+        .btn {
+            background: #74b9ff;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin: 10px;
+        }
+        .btn:hover {
+            background: #0984e3;
+        }
+        .btn-success {
+            background: #00b894;
+        }
+        .btn-success:hover {
+            background: #00a085;
+        }
+        .credentials {
+            background: white;
+            border: 2px solid #00b894;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .credential-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        .credential-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        .credential-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        .credential-value {
+            color: #dc3545;
+            font-weight: bold;
+            font-family: monospace;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #636e72;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <i class="fas fa-book" style="font-size: 48px; color: #74b9ff; margin-bottom: 20px;"></i>
+            <h1>手動設定指南</h1>
+            <p>當所有自動方法都失敗時的最終解決方案</p>
+        </div>
+
+        <div class="warning">
+            <h4><i class="fas fa-exclamation-triangle"></i> 重要提醒</h4>
+            <p>如果您無法透過自動重設工具登入，請按照以下步驟手動設定管理員帳號。</p>
+        </div>
+
+        <div class="step">
+            <h3><i class="fas fa-fire"></i> 步驟 1: 訪問 Firebase 控制台</h3>
+            <div class="step-content">
+                <ol>
+                    <li>打開瀏覽器，訪問 <a href="https://console.firebase.google.com" target="_blank">Firebase 控制台</a></li>
+                    <li>選擇您的西北勤務管理系統專案</li>
+                    <li>如果還沒有專案，請創建新的 Firebase 專案</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3><i class="fas fa-users"></i> 步驟 2: 創建身份驗證用戶</h3>
+            <div class="step-content">
+                <ol>
+                    <li>在左側選單中點擊「Authentication（身份驗證）」</li>
+                    <li>切換到「Users（用戶）」標籤</li>
+                    <li>點擊「Add user（添加用戶）」按鈕</li>
+                    <li>填寫以下資訊：
+                        <div class="credentials">
+                            <div class="credential-row">
+                                <span class="credential-label">Email：</span>
+                                <span class="credential-value">admin@nwcom.com</span>
+                            </div>
+                            <div class="credential-row">
+                                <span class="credential-label">Password：</span>
+                                <span class="credential-value">Admin123!</span>
+                            </div>
+                        </div>
+                    </li>
+                    <li>點擊「Add user」完成創建</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3><i class="fas fa-database"></i> 步驟 3: 添加用戶資料到 Firestore</h3>
+            <div class="step-content">
+                <ol>
+                    <li>在左側選單中點擊「Firestore Database」</li>
+                    <li>點擊「Start collection（開始集合）」或「Add collection（添加集合）」</li>
+                    <li>集合名稱輸入：<code>users</code></li>
+                    <li>文檔 ID 輸入：<code>ADMIN001</code></li>
+                    <li>添加以下欄位（點擊「Add field」）：
+                        <div class="code-block">
+{
+  "employeeId": "ADMIN001",
+  "email": "admin@nwcom.com",
+  "name": "系統管理員",
+  "role": "ADMIN",
+  "department": "管理處",
+  "phone": "02-23456789",
+  "createdAt": {serverTimestamp},
+  "isActive": true,
+  "permissions": {
+    "dashboard": true,
+    "personnel": true,
+    "checkin": true,
+    "reports": true,
+    "community": true,
+    "settings": true,
+    "logs": true
+  }
+}
+                        </div>
+                    </li>
+                    <li>對於 <code>createdAt</code> 欄位，選擇「timestamp」類型並勾選「server timestamp」</li>
+                    <li>點擊「Save」保存文檔</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3><i class="fas fa-cog"></i> 步驟 4: 設定 Firestore 規則</h3>
+            <div class="step-content">
+                <ol>
+                    <li>在 Firestore 頁面中，切換到「Rules」標籤</li>
+                    <li>確保規則允許讀寫操作（開發環境）：
+                        <div class="code-block">
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
+                        </div>
+                    </li>
+                    <li>點擊「Publish」發布規則</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="success">
+            <h4><i class="fas fa-check-circle"></i> 完成！</h4>
+            <p>現在您可以使用以下帳號登入系統：</p>
+            <div class="credentials">
+                <div class="credential-row">
+                    <span class="credential-label">使用者名稱：</span>
+                    <span class="credential-value">ADMIN001</span>
+                </div>
+                <div class="credential-row">
+                    <span class="credential-label">密碼：</span>
+                    <span class="credential-value">Admin123!</span>
+                </div>
+            </div>
+            <p style="color: #dc3545; font-weight: bold; margin-top: 15px;">
+                <i class="fas fa-exclamation-triangle"></i> 登入後請立即修改密碼！
+            </p>
+        </div>
+
+        <div style="margin: 30px 0;">
+            <button class="btn btn-success" onclick="goToLogin()">
+                <i class="fas fa-sign-in-alt"></i> 前往登入頁面
+            </button>
+            <button class="btn" onclick="window.location.href='emergency-reset.html'">
+                <i class="fas fa-hammer"></i> 使用緊急重設工具
+            </button>
+        </div>
+
+        <div class="footer">
+            <p><i class="fas fa-info-circle"></i> 如果以上步驟都無法解決問題，請考慮：</p>
+            <ul style="text-align: left; margin: 10px 0;">
+                <li>檢查 Firebase 專案設定是否正確</li>
+                <li>確認網路連線是否正常</li>
+                <li>嘗試使用不同的瀏覽器</li>
+                <li>聯繫 Firebase 技術支援</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function goToLogin() {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

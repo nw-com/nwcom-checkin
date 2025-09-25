@@ -1232,6 +1232,23 @@ textarea.form-control {
     min-height: 20px;
 }
 
+.login-help {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.forgot-password {
+    color: #dc3545;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #c82333;
+    text-decoration: underline;
+}
+
 /* 主頁面樣式 */
 .main-page {
     display: flex;
