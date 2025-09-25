@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 臨時簡化規則 - 允許所有讀寫（僅用於測試和修復登入問題）
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

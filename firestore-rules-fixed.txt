@@ -1,0 +1,111 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 輔助函數 - 檢查是否已認證
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // 輔助函數 - 獲取用戶ID（從auth.uid）
+    function getCurrentUserId() {
+      return request.auth.uid;
+    }
+    
+    // 輔助函數 - 檢查是否為管理員
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(getCurrentUserId())).data.role == 'ADMIN';
+    }
+    
+    // 輔助函數 - 檢查是否為高級管理員
+    function isSeniorManager() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(getCurrentUserId())).data.role == 'SENIOR_MANAGER';
+    }
+    
+    // 輔助函數 - 檢查是否為管理員（高級或初級）
+    function isManager() {
+      return isAuthenticated() && 
+             (get(/databases/$(database)/documents/users/$(getCurrentUserId())).data.role == 'SENIOR_MANAGER' ||
+              get(/databases/$(database)/documents/users/$(getCurrentUserId())).data.role == 'JUNIOR_MANAGER');
+    }
+    
+    // 輔助函數 - 檢查是否為自己的資料
+    function isOwner(userId) {
+      return isAuthenticated() && getCurrentUserId() == userId;
+    }
+    
+    // 用戶集合規則 - 允許在登入前創建初始用戶（用於註冊）
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(userId));
+      allow create: if true; // 允許任何人創建用戶（註冊）
+      allow update: if isAuthenticated() && (isAdmin() || isOwner(userId));
+      allow delete: if isAdmin();
+    }
+    
+    // 社區集合規則
+    match /communities/{communityId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+    
+    // 排班集合規則
+    match /schedules/{scheduleId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin() || isManager();
+    }
+    
+    // 打卡記錄集合規則
+    match /checkinLogs/{logId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager() || isOwner(resource.data.userId));
+      allow create: if isAuthenticated() && getCurrentUserId() == request.resource.data.userId;
+      allow update: if false; // 不允許更新打卡記錄
+      allow delete: if isAdmin();
+    }
+    
+    // 請假記錄集合規則
+    match /leaveRecords/{recordId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager() || isOwner(resource.data.userId));
+      allow create: if isAuthenticated() && getCurrentUserId() == request.resource.data.userId;
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+    
+    // 獎懲記錄集合規則
+    match /rewardRecords/{recordId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager() || isOwner(resource.data.userId));
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+    
+    // 任務集合規則
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager() || resource.data.assignee == getCurrentUserId());
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager() || resource.data.assignee == getCurrentUserId());
+      allow delete: if isAdmin() || isManager();
+    }
+    
+    // 登入記錄集合規則
+    match /loginLogs/{logId} {
+      allow read: if isAuthenticated() && (isAdmin() || isOwner(resource.data.userId));
+      allow create: if isAuthenticated(); // 允許記錄自己的登入活動
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+    
+    // 系統設定集合規則
+    match /systemSettings/{settingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+  }
+}
