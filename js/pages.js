@@ -63,6 +63,12 @@ class PageManager {
 
     // 檢查頁面權限
     checkPagePermission(pageName) {
+        // 基本頁面不需要特殊權限
+        const publicPages = ['dashboard', 'personal', 'checkin'];
+        if (publicPages.includes(pageName)) {
+            return true;
+        }
+        
         const userPermissions = window.currentUser?.permissions || {};
         const requiredPermission = this.getRequiredPermission(pageName);
         
@@ -87,7 +93,7 @@ class PageManager {
 
     // 更新活動選單
     updateActiveMenu(pageName) {
-        const menuItems = document.querySelectorAll('.menu-item');
+        const menuItems = document.querySelectorAll('.nav-item[data-page]');
         menuItems.forEach(item => {
             item.classList.remove('active');
             if (item.dataset.page === pageName) {
@@ -98,7 +104,7 @@ class PageManager {
 
     // 載入頁面內容
     async loadPageContent(pageName, subPage) {
-        const contentArea = document.getElementById('content-area');
+        const contentArea = document.getElementById('pageContent');
         if (!contentArea) return;
 
         // 顯示載入中
@@ -161,7 +167,7 @@ class PageManager {
 
     // 更新頁面標題
     updatePageTitle(pageName, subPage) {
-        const pageTitle = document.getElementById('page-title');
+        const pageTitle = document.getElementById('pageTitle');
         if (pageTitle && this.pages[pageName]) {
             let title = this.pages[pageName].title;
             if (subPage) {
@@ -1477,6 +1483,41 @@ class PageManager {
         `;
     }
 
+    // 建立系統備份
+    async createSystemBackup() {
+        try {
+            alert('系統備份功能開發中...');
+            // 實際應用中需要實現資料庫備份功能
+        } catch (error) {
+            console.error('建立系統備份失敗:', error);
+            alert('建立系統備份失敗：' + error.message);
+        }
+    }
+
+    // 下載備份
+    async downloadBackup(backupId) {
+        try {
+            alert(`下載備份: ${backupId}（功能開發中...）`);
+            // 實際應用中需要實現備份下載功能
+        } catch (error) {
+            console.error('下載備份失敗:', error);
+            alert('下載備份失敗：' + error.message);
+        }
+    }
+
+    // 刪除備份
+    async deleteBackup(backupId) {
+        try {
+            if (confirm(`確定要刪除備份 ${backupId} 嗎？`)) {
+                alert(`備份 ${backupId} 已刪除（功能開發中...）`);
+                // 實際應用中需要實現備份刪除功能
+            }
+        } catch (error) {
+            console.error('刪除備份失敗:', error);
+            alert('刪除備份失敗：' + error.message);
+        }
+    }
+
     // 載入系統備份
     async loadSystemBackup() {
         return `
@@ -1651,4 +1692,23 @@ class PageManager {
             alert('系統日誌匯出功能開發中...');
             // 實際應用中需要實現 CSV 或 Excel 匯出功能
         } catch (error) {
-            console.error('匯出系統日誌失
+            console.error('匯出系統日誌失敗:', error);
+            alert('匯出系統日誌失敗：' + error.message);
+        }
+    }
+}
+
+// 創建全域頁面管理器實例
+const pageManager = new PageManager();
+
+// 匯出給全域使用
+window.pageManager = pageManager;
+
+// 確保頁面管理器在 DOM 載入後可用
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('頁面管理器已初始化完成');
+    });
+} else {
+    console.log('頁面管理器已初始化完成（DOM 已就緒）');
+}

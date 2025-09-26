@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登錄功能測試 - 西北勤務管理系統</title>
+    <link rel="stylesheet" href="ccs/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .test-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .console-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .mock-login {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .nav-test {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .nav-test button {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav-test button:hover {
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-vial"></i> 登錄功能測試</h1>
+        
+        <div class="test-section">
+            <h2><i class="fas fa-user"></i> 模擬登錄狀態</h2>
+            <div class="mock-login">
+                <p>點擊下面的按鈕模擬不同角色的用戶登錄，然後測試導航功能：</p>
+                <div style="display: flex; gap: 10px; margin: 10px 0;">
+                    <button class="btn btn-primary" onclick="mockLogin('admin')">模擬管理員登錄</button>
+                    <button class="btn btn-secondary" onclick="mockLogin('supervisor')">模擬主管登錄</button>
+                    <button class="btn btn-info" onclick="mockLogin('guard')">模擬警衛登錄</button>
+                    <button class="btn btn-warning" onclick="mockLogout()">登出</button>
+                </div>
+                <div id="currentUserStatus"></div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><i class="fas fa-mouse-pointer"></i> 導航功能測試</h2>
+            <div id="navigationTest"></div>
+            <div class="nav-test">
+                <button onclick="testPageLoad('dashboard')">儀表板</button>
+                <button onclick="testPageLoad('personal')">個人資訊</button>
+                <button onclick="testPageLoad('checkin')">定位打卡</button>
+                <button onclick="testPageLoad('schedule')">勤務排班</button>
+                <button onclick="testPageLoad('leave')">請假排休</button>
+                <button onclick="testPageLoad('reward')">獎懲登錄</button>
+                <button onclick="testPageLoad('task')">任務指派</button>
+                <button onclick="testPageLoad('training')">教育訓練</button>
+                <button onclick="testPageLoad('community')">社區管理</button>
+                <button onclick="testPageLoad('account')">帳號管理</button>
+                <button onclick="testPageLoad('system')">系統管理</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><i class="fas fa-bars"></i> 側邊欄功能測試</h2>
+            <div id="sidebarTest"></div>
+            <div style="margin: 15px 0;">
+                <button class="btn btn-primary" onclick="testSidebarToggle()">切換側邊欄</button>
+                <button class="btn btn-secondary" onclick="testUserProfile()">測試用戶檔案</button>
+                <button class="btn btn-info" onclick="testHelpModal()">測試幫助彈窗</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><i class="fas fa-terminal"></i> 控制台輸出</h2>
+            <div id="consoleOutput" class="console-output"></div>
+        </div>
+    </div>
+
+    <!-- 主要內容區域（模擬主應用程序） -->
+    <div id="mainPage" class="main-page" style="display: none;">
+        <!-- 手機版側邊欄 -->
+        <div id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2 class="sidebar-title">西北勤務管理系統</h2>
+                <p class="sidebar-version">v1.0.0</p>
+            </div>
+            
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name" id="userDisplayName">使用者</span>
+                    <span class="user-role" id="userRole">勤務人員</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard" onclick="testNavClick(this)">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>儀表板</span>
+                </button>
+                <button class="nav-item" data-page="personal" onclick="testNavClick(this)">
+                    <i class="fas fa-user"></i>
+                    <span>個人資訊</span>
+                </button>
+                <button class="nav-item" data-page="checkin" onclick="testNavClick(this)">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>定位打卡</span>
+                </button>
+                <button class="nav-item" data-page="community" onclick="testNavClick(this)">
+                    <i class="fas fa-building"></i>
+                    <span>社區管理</span>
+                </button>
+                <button class="nav-item" data-page="account" onclick="testNavClick(this)">
+                    <i class="fas fa-users"></i>
+                    <span>帳號管理</span>
+                </button>
+                <button class="nav-item" data-page="system" onclick="testNavClick(this)">
+                    <i class="fas fa-cog"></i>
+                    <span>系統管理</span>
+                </button>
+                <button class="nav-item logout" onclick="testLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>登出</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- 主要內容區 -->
+        <div class="main-content">
+            <!-- 頂部導航 -->
+            <header class="main-header">
+                <button class="menu-toggle" onclick="testMenuToggle()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">儀表板</h1>
+                <div class="header-actions">
+                    <button class="user-profile-btn" onclick="testUserProfile()">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 頁面內容 -->
+            <div class="page-content" id="pageContent">
+                <div style="padding: 20px; text-align: center;">
+                    <h2>歡迎使用西北勤務管理系統</h2>
+                    <p>這是測試環境，所有導航功能都應該正常工作。</p>
+                    <p>當前頁面：<span id="currentPage">dashboard</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 遮罩層 -->
+        <div id="overlay" class="overlay" onclick="testOverlayClick()"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- 應用程式腳本 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // 控制台輸出捕獲
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        function addConsoleOutput(type, message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? 'red' : type === 'warn' ? 'orange' : 'black';
+            consoleOutput.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${timestamp}] ${type.toUpperCase()}: ${message}</div>`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            addConsoleOutput('log', args.join(' '));
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addConsoleOutput('error', args.join(' '));
+        };
+
+        // 顯示測試結果
+        function showResult(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML += `<div class="test-result test-${type}">${message}</div>`;
+        }
+
+        // 模擬登錄
+        function mockLogin(role) {
+            console.log(`模擬 ${role} 登錄...`);
+            
+            const users = {
+                admin: {
+                    name: '管理員',
+                    email: 'admin@nwcom.com',
+                    role: 'admin',
+                    employeeId: 'A001',
+                    department: '管理處',
+                    phone: '02-12345678',
+                    permissions: {
+                        view_community: true,
+                        view_personnel: true,
+                        view_checkin: true,
+                        view_reports: true,
+                        view_system: true,
+                        view_account: true
+                    }
+                },
+                supervisor: {
+                    name: '張主管',
+                    email: 'supervisor@nwcom.com',
+                    role: 'supervisor',
+                    employeeId: 'S001',
+                    department: '督導處',
+                    phone: '02-87654321',
+                    permissions: {
+                        view_community: true,
+                        view_personnel: true,
+                        view_checkin: true,
+                        view_reports: true,
+                        view_system: false,
+                        view_account: false
+                    }
+                },
+                guard: {
+                    name: '李警衛',
+                    email: 'guard@nwcom.com',
+                    role: 'guard',
+                    employeeId: 'G001',
+                    department: '警衛隊',
+                    phone: '02-11111111',
+                    permissions: {
+                        view_community: false,
+                        view_personnel: false,
+                        view_checkin: true,
+                        view_reports: false,
+                        view_system: false,
+                        view_account: false
+                    }
+                }
+            };
+
+            window.currentUser = users[role];
+            
+            // 更新 UI
+            document.getElementById('userDisplayName').textContent = window.currentUser.name;
+            document.getElementById('userRole').textContent = window.currentUser.role;
+            
+            // 顯示主頁面
+            document.getElementById('mainPage').style.display = 'block';
+            
+            // 更新權限顯示
+            updateNavigationByRole();
+            
+            document.getElementById('currentUserStatus').innerHTML = `
+                <div class="test-success">
+                    <strong>當前用戶:</strong> ${window.currentUser.name} (${window.currentUser.role})<br>
+                    <strong>部門:</strong> ${window.currentUser.department}<br>
+                    <strong>權限:</strong> ${Object.keys(window.currentUser.permissions).filter(p => window.currentUser.permissions[p]).join(', ')}
+                </div>
+            `;
+            
+            showResult('navigationTest', `✓ ${role} 登錄成功`, 'success');
+            console.log(`模擬 ${role} 登錄完成`);
+        }
+
+        // 模擬登出
+        function mockLogout() {
+            console.log('模擬登出...');
+            window.currentUser = null;
+            document.getElementById('mainPage').style.display = 'none';
+            document.getElementById('currentUserStatus').innerHTML = '';
+            showResult('navigationTest', '✓ 登出成功', 'success');
+        }
+
+        // 根據角色更新導航
+        function updateNavigationByRole() {
+            if (!window.currentUser) return;
+            
+            const navItems = document.querySelectorAll('.nav-item[data-page]');
+            navItems.forEach(item => {
+                const pageName = item.dataset.page;
+                const hasPermission = window.pageManager ? window.pageManager.checkPagePermission(pageName) : true;
+                
+                if (hasPermission) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 測試頁面載入
+        function testPageLoad(pageName) {
+            console.log(`測試載入頁面: ${pageName}`);
+            
+            if (!window.currentUser) {
+                showResult('navigationTest', `⚠ 請先登入以測試 ${pageName} 頁面`, 'warning');
+                return;
+            }
+            
+            if (window.pageManager) {
+                window.pageManager.loadPage(pageName).then(() => {
+                    document.getElementById('currentPage').textContent = pageName;
+                    showResult('navigationTest', `✓ ${pageName} 頁面載入成功`, 'success');
+                }).catch(error => {
+                    showResult('navigationTest', `✗ ${pageName} 載入失敗: ${error.message}`, 'error');
+                });
+            } else {
+                showResult('navigationTest', `⚠ PageManager 未初始化，模擬載入 ${pageName}`, 'warning');
+                document.getElementById('currentPage').textContent = pageName;
+            }
+        }
+
+        // 測試側邊欄切換
+        function testSidebarToggle() {
+            console.log('測試側邊欄切換...');
+            
+            if (window.nwComApp && window.nwComApp.toggleSidebar) {
+                window.nwComApp.toggleSidebar();
+                showResult('sidebarTest', '✓ 側邊欄切換功能正常', 'success');
+            } else {
+                // 手動切換
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('overlay');
+                
+                if (sidebar && overlay) {
+                    sidebar.classList.toggle('active');
+                    overlay.classList.toggle('active');
+                    showResult('sidebarTest', '✓ 側邊欄手動切換成功', 'success');
+                } else {
+                    showResult('sidebarTest', '✗ 找不到側邊欄元素', 'error');
+                }
+            }
+        }
+
+        // 測試導航點擊
+        function testNavClick(element) {
+            console.log(`測試導航點擊: ${element.dataset.page}`);
+            
+            // 更新活動狀態
+            document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            // 載入頁面
+            testPageLoad(element.dataset.page);
+        }
+
+        // 測試菜單切換按鈕
+        function testMenuToggle() {
+            console.log('測試菜單切換按鈕...');
+            testSidebarToggle();
+        }
+
+        // 測試遮罩層點擊
+        function testOverlayClick() {
+            console.log('測試遮罩層點擊...');
+            testSidebarToggle(); // 應該關閉側邊欄
+        }
+
+        // 測試用戶檔案
+        function testUserProfile() {
+            console.log('測試用戶檔案功能...');
+            
+            if (window.nwComApp && window.nwComApp.showUserProfile) {
+                window.nwComApp.showUserProfile();
+                showResult('sidebarTest', '✓ 用戶檔案彈窗顯示成功', 'success');
+            } else {
+                showResult('sidebarTest', '⚠ 用戶檔案功能未完全載入', 'warning');
+                
+                // 簡單的替代顯示
+                if (window.currentUser) {
+                    alert(`用戶檔案\n\n姓名: ${window.currentUser.name}\n角色: ${window.currentUser.role}\n部門: ${window.currentUser.department}\n電話: ${window.currentUser.phone}`);
+                }
+            }
+        }
+
+        // 測試幫助彈窗
+        function testHelpModal() {
+            console.log('測試幫助彈窗...');
+            
+            if (window.nwComApp && window.nwComApp.showHelp) {
+                window.nwComApp.showHelp();
+                showResult('sidebarTest', '✓ 幫助彈窗顯示成功', 'success');
+            } else {
+                showResult('sidebarTest', '⚠ 幫助功能未完全載入', 'warning');
+                alert('幫助功能測試\n\n快捷鍵:\nCtrl+/ - 顯示幫助\nESC - 關閉彈窗\nCtrl+L - 登出');
+            }
+        }
+
+        // 測試登出
+        function testLogout() {
+            console.log('測試登出功能...');
+            mockLogout();
+        }
+
+        // 頁面載入完成後執行測試
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('登錄測試頁面已載入');
+            
+            // 延遲執行，確保所有腳本載入完成
+            setTimeout(() => {
+                console.log('開始測試系統功能...');
+                
+                // 測試基本功能
+                if (window.pageManager) {
+                    showResult('navigationTest', '✓ PageManager 已載入', 'success');
+                } else {
+                    showResult('navigationTest', '✗ PageManager 未載入', 'error');
+                }
+                
+                if (window.nwComApp) {
+                    showResult('sidebarTest', '✓ NWComApp 已載入', 'success');
+                } else {
+                    showResult('sidebarTest', '✗ NWComApp 未載入', 'error');
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

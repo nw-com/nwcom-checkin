@@ -23,6 +23,9 @@ class NWComApp {
         // 設定鍵盤快捷鍵
         this.setupKeyboardShortcuts();
         
+        // 設定導航事件
+        this.setupNavigationEvents();
+        
         this.isInitialized = true;
         console.log('西北勤務管理系統初始化完成');
     }
@@ -152,6 +155,96 @@ class NWComApp {
                 }
             }
         });
+    }
+
+    // 設定導航事件
+    setupNavigationEvents() {
+        // 綁定側邊欄導航按鈕
+        document.addEventListener('click', (e) => {
+            const navItem = e.target.closest('.nav-item[data-page]');
+            if (navItem) {
+                e.preventDefault();
+                const pageName = navItem.getAttribute('data-page');
+                if (pageName && window.pageManager) {
+                    window.pageManager.loadPage(pageName);
+                }
+            }
+        });
+
+        // 綁定選單切換按鈕
+        const menuToggle = document.querySelector('.menu-toggle');
+        if (menuToggle) {
+            menuToggle.addEventListener('click', () => {
+                this.toggleSidebar();
+            });
+        }
+
+        // 綁定使用者檔案按鈕
+        const userProfileBtn = document.querySelector('.user-profile-btn');
+        if (userProfileBtn) {
+            userProfileBtn.addEventListener('click', () => {
+                this.showUserProfile();
+            });
+        }
+    }
+
+    // 切換側邊欄
+    toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (sidebar && overlay && mainContent) {
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+            mainContent.classList.toggle('sidebar-open');
+        }
+    }
+
+    // 關閉側邊欄
+    closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (sidebar && overlay && mainContent) {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            mainContent.classList.remove('sidebar-open');
+        }
+    }
+
+    // 顯示使用者檔案
+    showUserProfile() {
+        if (!window.currentUser) return;
+        
+        const profileHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 48px; margin-bottom: 15px;">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h3>${window.currentUser.name}</h3>
+                <p style="color: #666; margin-bottom: 20px;">
+                    ${firebaseUtils.getRoleDisplayName(window.currentUser.role)}
+                </p>
+                <div style="text-align: left; margin-bottom: 20px;">
+                    <p><strong>員工編號:</strong> ${window.currentUser.employeeId}</p>
+                    <p><strong>部門:</strong> ${window.currentUser.department}</p>
+                    <p><strong>電話:</strong> ${window.currentUser.phone}</p>
+                    <p><strong>Email:</strong> ${window.currentUser.email}</p>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn btn-primary" onclick="window.nwComApp.closeAllModals(); window.pageManager.loadPage('account')">
+                        <i class="fas fa-user-edit"></i> 編輯資料
+                    </button>
+                    <button class="btn btn-danger" onclick="if(confirm('確定要登出嗎？')) authManager.logout();">
+                        <i class="fas fa-sign-out-alt"></i> 登出
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        this.showModal('使用者檔案', profileHTML);
     }
 
     // 處理視窗大小改變
