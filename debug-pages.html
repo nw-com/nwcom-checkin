@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>頁面載入除錯</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .debug-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 3px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>頁面載入除錯工具</h1>
+    
+    <div class="debug-section">
+        <h2>基本檢查</h2>
+        <div id="basicCheck"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>頁面內容載入測試</h2>
+        <button onclick="testDirectPageLoad()">直接測試頁面載入</button>
+        <div id="pageLoadTest"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>權限檢查</h2>
+        <button onclick="testPermissionCheck()">測試權限檢查</button>
+        <div id="permissionTest"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h2>方法存在性檢查</h2>
+        <button onclick="checkMethods()">檢查必要方法是否存在</button>
+        <div id="methodCheck"></div>
+    </div>
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
+    
+    <script>
+        function addDebugInfo(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'debug-info ' + type;
+            div.textContent = message;
+            container.appendChild(div);
+        }
+        
+        // 基本檢查
+        window.addEventListener('DOMContentLoaded', function() {
+            addDebugInfo('basicCheck', 'DOM 載入完成');
+            
+            if (typeof pageManager !== 'undefined') {
+                addDebugInfo('basicCheck', '✓ 頁面管理器已初始化', 'success');
+                addDebugInfo('basicCheck', '✓ 頁面定義: ' + Object.keys(pageManager.pages).join(', '), 'success');
+            } else {
+                addDebugInfo('basicCheck', '✗ 頁面管理器未定義', 'error');
+            }
+            
+            if (typeof window.currentUser !== 'undefined') {
+                addDebugInfo('basicCheck', '✓ 當前用戶: ' + JSON.stringify(window.currentUser), 'success');
+            } else {
+                addDebugInfo('basicCheck', '✗ 當前用戶未定義', 'error');
+            }
+        });
+        
+        // 測試直接頁面載入
+        async function testDirectPageLoad() {
+            const container = document.getElementById('pageLoadTest');
+            container.innerHTML = '';
+            
+            if (typeof pageManager === 'undefined') {
+                addDebugInfo('pageLoadTest', '✗ 頁面管理器未定義', 'error');
+                return;
+            }
+            
+            try {
+                // 測試儀表板
+                addDebugInfo('pageLoadTest', '正在測試儀表板載入...');
+                const dashboardContent = await pageManager.loadDashboardContent();
+                addDebugInfo('pageLoadTest', '✓ 儀表板內容長度: ' + dashboardContent.length, 'success');
+                
+                // 測試社區管理
+                addDebugInfo('pageLoadTest', '正在測試社區管理載入...');
+                const communityContent = await pageManager.loadCommunityContent('community-list');
+                addDebugInfo('pageLoadTest', '✓ 社區管理內容長度: ' + communityContent.length, 'success');
+                
+                // 測試打卡管理
+                addDebugInfo('pageLoadTest', '正在測試打卡管理載入...');
+                const checkinContent = await pageManager.loadCheckinContent('checkin-history');
+                addDebugInfo('pageLoadTest', '✓ 打卡管理內容長度: ' + checkinContent.length, 'success');
+                
+            } catch (error) {
+                addDebugInfo('pageLoadTest', '✗ 載入錯誤: ' + error.message, 'error');
+                console.error('詳細錯誤:', error);
+            }
+        }
+        
+        // 測試權限檢查
+        function testPermissionCheck() {
+            const container = document.getElementById('permissionTest');
+            container.innerHTML = '';
+            
+            if (typeof pageManager === 'undefined') {
+                addDebugInfo('permissionTest', '✗ 頁面管理器未定義', 'error');
+                return;
+            }
+            
+            const testPages = ['dashboard', 'community', 'personnel', 'checkin', 'reports', 'system', 'account'];
+            
+            testPages.forEach(page => {
+                const hasPermission = pageManager.checkPagePermission(page);
+                const requiredPermission = pageManager.getRequiredPermission(page);
+                addDebugInfo('permissionTest', 
+                    `${page}: 權限=${hasPermission}, 需要=${requiredPermission || "無"}`, 
+                    hasPermission ? 'success' : 'error'
+                );
+            });
+        }
+        
+        // 檢查方法是否存在
+        function checkMethods() {
+            const container = document.getElementById('methodCheck');
+            container.innerHTML = '';
+            
+            if (typeof pageManager === 'undefined') {
+                addDebugInfo('methodCheck', '✗ 頁面管理器未定義', 'error');
+                return;
+            }
+            
+            const methods = [
+                'loadDashboardContent',
+                'loadCommunityContent', 
+                'loadPersonnelContent',
+                'loadCheckinContent',
+                'loadReportsContent',
+                'loadSystemContent',
+                'loadAccountContent'
+            ];
+            
+            methods.forEach(method => {
+                if (typeof pageManager[method] === 'function') {
+                    addDebugInfo('methodCheck', `✓ ${method} 方法存在`, 'success');
+                } else {
+                    addDebugInfo('methodCheck', `✗ ${method} 方法不存在`, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

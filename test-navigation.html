@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>導航測試 - 頁面載入檢查</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .test-button { margin: 5px; padding: 10px 15px; border: none; border-radius: 3px; cursor: pointer; }
+        .test-success { background: #4CAF50; color: white; }
+        .test-error { background: #f44336; color: white; }
+        .test-loading { background: #ff9800; color: white; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 3px; }
+        .result.success { background: #e8f5e8; border: 1px solid #4CAF50; }
+        .result.error { background: #ffeaea; border: 1px solid #f44336; }
+        .console-output { background: #f5f5f5; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>導航測試 - 頁面載入檢查</h1>
+    
+    <div class="test-section">
+        <h2>頁面載入測試</h2>
+        <p>點擊按鈕測試各個頁面是否能正常載入：</p>
+        
+        <div id="pageButtons">
+            <button class="test-button" onclick="testPageLoad('dashboard')">儀表板</button>
+            <button class="test-button" onclick="testPageLoad('community')">社區管理</button>
+            <button class="test-button" onclick="testPageLoad('personnel')">人員管理</button>
+            <button class="test-button" onclick="testPageLoad('checkin')">打卡管理</button>
+            <button class="test-button" onclick="testPageLoad('reports')">報表中心</button>
+            <button class="test-button" onclick="testPageLoad('system')">系統管理</button>
+            <button class="test-button" onclick="testPageLoad('account')">帳號管理</button>
+        </div>
+        
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>控制台輸出</h2>
+        <div id="consoleOutput" class="console-output"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>快速修復測試</h2>
+        <button class="test-button" onclick="enableAllPages()">啟用所有頁面（無需權限）</button>
+        <button class="test-button" onclick="simulateLogin()">模擬登入</button>
+        <div id="quickFixResults"></div>
+    </div>
+
+    <script>
+        // 捕獲控制台輸出
+        const consoleOutput = document.getElementById('consoleOutput');
+        const originalConsoleLog = console.log;
+        const originalConsoleError = console.error;
+        
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            consoleOutput.innerHTML += '<div style="color: #333;">' + args.join(' ') + '</div>';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        console.error = function(...args) {
+            originalConsoleError.apply(console, args);
+            consoleOutput.innerHTML += '<div style="color: red;">ERROR: ' + args.join(' ') + '</div>';
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        function addTestResult(pageName, status, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${status}`;
+            resultDiv.innerHTML = `<strong>${pageName}:</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        async function testPageLoad(pageName) {
+            console.log(`正在測試頁面: ${pageName}`);
+            
+            try {
+                // 檢查頁面管理器是否存在
+                if (typeof pageManager === 'undefined') {
+                    addTestResult(pageName, 'error', '頁面管理器未初始化');
+                    return;
+                }
+                
+                // 檢查頁面是否存在於定義中
+                if (!pageManager.pages[pageName]) {
+                    addTestResult(pageName, 'error', '頁面未定義在pages物件中');
+                    return;
+                }
+                
+                // 嘗試載入頁面
+                await pageManager.loadPage(pageName);
+                
+                // 檢查內容是否載入成功
+                const contentArea = document.getElementById('pageContent');
+                if (contentArea && contentArea.innerHTML && contentArea.innerHTML !== '') {
+                    if (contentArea.innerHTML.includes('頁面不存在')) {
+                        addTestResult(pageName, 'error', '頁面顯示「不存在」訊息');
+                    } else if (contentArea.innerHTML.includes('載入中')) {
+                        addTestResult(pageName, 'error', '頁面停留在載入狀態');
+                    } else {
+                        addTestResult(pageName, 'success', '頁面載入成功');
+                    }
+                } else {
+                    addTestResult(pageName, 'error', '頁面內容為空');
+                }
+                
+            } catch (error) {
+                addTestResult(pageName, 'error', `載入失敗: ${error.message}`);
+                console.error(`頁面 ${pageName} 載入錯誤:`, error);
+            }
+        }
+        
+        function enableAllPages() {
+            // 臨時修改權限檢查邏輯
+            if (typeof pageManager !== 'undefined') {
+                const originalCheckPermission = pageManager.checkPagePermission;
+                pageManager.checkPagePermission = function(pageName) {
+                    console.log(`跳過權限檢查，允許訪問: ${pageName}`);
+                    return true;
+                };
+                
+                document.getElementById('quickFixResults').innerHTML = 
+                    '<div class="result success">已啟用無權限訪問模式，請重新測試頁面</div>';
+            } else {
+                document.getElementById('quickFixResults').innerHTML = 
+                    '<div class="result error">頁面管理器未初始化</div>';
+            }
+        }
+        
+        function simulateLogin() {
+            // 模擬用戶登入狀態
+            window.currentUser = {
+                role: 'admin',
+                permissions: {
+                    'view_community': true,
+                    'view_personnel': true,
+                    'view_checkin': true,
+                    'view_reports': true,
+                    'view_system': true,
+                    'view_account': true
+                }
+            };
+            
+            document.getElementById('quickFixResults').innerHTML = 
+                '<div class="result success">已模擬管理員登入，擁有所有權限</div>';
+            
+            console.log('已模擬用戶登入:', window.currentUser);
+        }
+        
+        // 頁面載入完成後顯示狀態
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('測試頁面已載入');
+            console.log('頁面管理器狀態:', typeof pageManager !== 'undefined' ? '已初始化' : '未初始化');
+            console.log('當前用戶狀態:', window.currentUser || '未登入');
+        });
+    </script>
+    
+    <!-- 載入應用程式的必要腳本 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/pages.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

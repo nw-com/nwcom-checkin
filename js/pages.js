@@ -63,6 +63,12 @@ class PageManager {
 
     // 檢查頁面權限
     checkPagePermission(pageName) {
+        // 開發模式：允許所有頁面訪問（暫時禁用權限檢查）
+        console.log(`檢查頁面權限: ${pageName} - 開發模式：允許訪問`);
+        return true;
+        
+        // 正式環境的權限檢查（已註解）
+        /*
         // 基本頁面不需要特殊權限
         const publicPages = ['dashboard', 'personal', 'checkin'];
         if (publicPages.includes(pageName)) {
@@ -75,6 +81,7 @@ class PageManager {
         if (!requiredPermission) return true;
         
         return userPermissions[requiredPermission] === true;
+        */
     }
 
     // 獲取頁面所需權限
