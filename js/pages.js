@@ -5,9 +5,15 @@ class PageManager {
         this.currentSubPage = '';
         this.pages = {
             'dashboard': { title: '儀表板', icon: 'fas fa-tachometer-alt' },
+            'personal': { title: '個人資訊', icon: 'fas fa-user' },
             'community': { title: '社區管理', icon: 'fas fa-building' },
             'personnel': { title: '人員管理', icon: 'fas fa-users' },
             'checkin': { title: '打卡管理', icon: 'fas fa-clock' },
+            'schedule': { title: '勤務排班', icon: 'fas fa-calendar-alt' },
+            'leave': { title: '請假排休', icon: 'fas fa-calendar-times' },
+            'reward': { title: '獎懲登錄', icon: 'fas fa-trophy' },
+            'task': { title: '任務指派', icon: 'fas fa-tasks' },
+            'training': { title: '教育訓練', icon: 'fas fa-graduation-cap' },
             'reports': { title: '報表中心', icon: 'fas fa-chart-bar' },
             'system': { title: '系統管理', icon: 'fas fa-cog' },
             'account': { title: '帳號管理', icon: 'fas fa-user' }
@@ -124,6 +130,9 @@ class PageManager {
                 case 'dashboard':
                     htmlContent = await this.loadDashboardContent();
                     break;
+                case 'personal':
+                    htmlContent = await this.loadPersonalContent(subPage);
+                    break;
                 case 'community':
                     htmlContent = await this.loadCommunityContent(subPage);
                     break;
@@ -132,6 +141,21 @@ class PageManager {
                     break;
                 case 'checkin':
                     htmlContent = await this.loadCheckinContent(subPage);
+                    break;
+                case 'schedule':
+                    htmlContent = await this.loadScheduleContent(subPage);
+                    break;
+                case 'leave':
+                    htmlContent = await this.loadLeaveContent(subPage);
+                    break;
+                case 'reward':
+                    htmlContent = await this.loadRewardContent(subPage);
+                    break;
+                case 'task':
+                    htmlContent = await this.loadTaskContent(subPage);
+                    break;
+                case 'training':
+                    htmlContent = await this.loadTrainingContent(subPage);
                     break;
                 case 'reports':
                     htmlContent = await this.loadReportsContent(subPage);
@@ -187,20 +211,73 @@ class PageManager {
     // 獲取子頁面標題
     getSubPageTitle(subPage) {
         const subPageTitles = {
+            // 個人資訊
+            'personal-profile': '個人檔案',
+            'personal-documents': '文件管理',
+            'personal-settings': '個人設定',
+            
+            // 社區管理
             'community-list': '社區列表',
             'community-add': '新增社區',
             'community-schedule': '班表管理',
             'community-overview': '總覽',
+            
+            // 人員管理
             'personnel-list': '人員列表',
             'personnel-add': '新增人員',
             'personnel-schedule': '班表管理',
+            
+            // 打卡管理
             'checkin-history': '打卡記錄',
             'checkin-realtime': '即時打卡',
+            'checkin-rules': '打卡規則',
+            'checkin-statistics': '打卡統計',
+            
+            // 勤務排班
+            'schedule-view': '排班檢視',
+            'schedule-create': '建立排班',
+            'schedule-swap': '調班申請',
+            'schedule-overtime': '加班管理',
+            
+            // 請假排休
+            'leave-apply': '請假申請',
+            'leave-approval': '請假審核',
+            'leave-calendar': '請假行事曆',
+            'leave-balance': '假期餘額',
+            
+            // 獎懲登錄
+            'reward-records': '獎懲記錄',
+            'reward-statistics': '獎懲統計',
+            'reward-apply': '獎懲申請',
+            'reward-approval': '獎懲審核',
+            
+            // 任務指派
+            'task-assign': '任務指派',
+            'task-monitor': '任務監控',
+            'task-completed': '已完成任務',
+            'task-statistics': '任務統計',
+            
+            // 教育訓練
+            'training-courses': '課程管理',
+            'training-schedule': '訓練排程',
+            'training-records': '訓練記錄',
+            'training-resources': '訓練資源',
+            
+            // 報表中心
             'reports-attendance': '出勤報表',
             'reports-performance': '績效報表',
+            'reports-leave': '請假報表',
+            'reports-checkin': '打卡報表',
+            'reports-export': '報表匯出',
+            
+            // 系統管理
             'system-settings': '系統設定',
             'system-logs': '系統日誌',
             'system-backup': '備份管理',
+            'system-update': '系統更新',
+            'system-api': 'API管理',
+            
+            // 帳號管理
             'user-list': '使用者列表',
             'user-add': '新增使用者',
             'role-manage': '角色管理'
